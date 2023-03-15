@@ -16,7 +16,8 @@ void JSON_Traverser::traverse_arg_element(const Value& arg_tag) {
     assert(arg_tag.HasMember("@val") && "Не указано значение аргумента");
     assert(arg_tag["@val"].IsString());
     printf("val = %s\n", arg_tag["@val"].GetString());
-    // BlockTagInfo& block = graph.get_last_block();
+    // BlockTagsInfo& blocks = graph.get_blocks();
+    // BlockTagInfo& block = blocks.get_last_block();
     // ArgTagsInfo& args = block.get_args();
     // ParamsMap& params = graph.get_params();
     // std::string begin_str, end_str;
@@ -44,10 +45,11 @@ void JSON_Traverser::traverse_arg(const Value& arg_tag) {
 // void JSON_Traverser::traverse_vertex_in_element(const Value& in_tag, GraphInfo& graph)
 void JSON_Traverser::traverse_vertex_in_element(const Value& in_tag) {
     assert(in_tag.IsObject() && "Тег in не является объектом");
-    // BlockTagInfo& block = graph.get_last_block();
-    // VertexArgsInfo& vertices = block.get_vertices();
     assert(in_tag.HasMember("@src") && "Не указан src");
     assert(in_tag["@src"].IsString());
+    // BlockTagsInfo& blocks = graph.get_blocks();
+    // BlockTagInfo& block = blocks.get_last_block();
+    // VertexTagsInfo& vertices = block.get_vertices();
     if (in_tag.HasMember("@bsrc")) {
         assert(in_tag["@bsrc"].IsString());
         // vertices.add_bsrc(make_pare(in_tag["@bsrc"].GetString(), in_tag["@src"].GetString()));
@@ -78,17 +80,19 @@ void JSON_Traverser::traverse_vertex_element(const Value& vertex_tag) {
     assert(vertex_tag.HasMember("@condition") && "Не указан condition");
     assert(vertex_tag["@condition"].IsString());
     assert(vertex_tag["@type"].IsString());
-    // BlockTagInfo& block = graph.get_last_block();
+    // BlockTagsInfo& blocks = graph.get_blocks();
+    // BlockTagInfo& block = blocks.get_last_block();
     // VertexTagsInfo& vertices = block.get_vertices();
     // vertices.new_vertex();
     for (Value::ConstMemberIterator itr = vertex_tag.MemberBegin(); itr != vertex_tag.MemberEnd(); ++itr) {
         if (!strcmp(itr->name.GetString(), "@condition")) {
             assert(vertex_tag["@condition"].IsString());
             printf("Type of member %s is %s\n", itr->name.GetString(), kTypeNames[itr->value.GetType()]);
-            // vertices.add_condition();
+            // vertices.add_condition(vertex_tag["@condition"].IsString());
         } else if (!strcmp(itr->name.GetString(), "@type")) {
+            assert(vertex_tag["@type"].IsString());
             printf("Type of member %s is %s\n", itr->name.GetString(), kTypeNames[itr->value.GetType()]);
-            // vertices.add_type();
+            // vertices.add_type(vertex_tag["@type"].IsString());
         } else if (!strcmp(itr->name.GetString(), "in")) {
             printf("Type of member %s is %s\n", itr->name.GetString(), kTypeNames[itr->value.GetType()]);
             // traverse_vertex_in(itr->value, graph);
@@ -120,14 +124,15 @@ void JSON_Traverser::traverse_block_element(const Value& block_tag) {
     assert(block_tag["@id"].IsString());
     assert(block_tag.HasMember("@dims") && "Не указана размерность пространства");
     assert(block_tag["@dims"].IsString());
-    // graph.new_block();
+    // BlockTagsInfo& blocks = graph.get_blocks();
+    // blocks.new_block();
     for (Value::ConstMemberIterator itr = block_tag.MemberBegin(); itr != block_tag.MemberEnd(); ++itr) {
         if (!strcmp(itr->name.GetString(), "@id")) {
-            // graph.add_block_id();
+            // block.add_id(block_tag["@id"].IsString());
             assert(block_tag["@id"].IsString());
             printf("Type of member %s is %s\n", itr->name.GetString(), kTypeNames[itr->value.GetType()]);
         } else if (!strcmp(itr->name.GetString(), "@dims")) {
-            // graph.add_block_dim();
+            // block.add_dim(block_tag["@dims"].IsString());
             assert(block_tag["@dims"].IsString());
             printf("Type of member %s is %s\n", itr->name.GetString(), kTypeNames[itr->value.GetType()]);
         } else if (!strcmp(itr->name.GetString(), "arg")) {
@@ -175,8 +180,7 @@ void JSON_Traverser::traverse_param_element(const Value& param_tag) {
     // assert(param_tag.HasMember("@value"));
     // assert(param_tag["@value"].IsString());
     // printf("val = %s\n", param_tag["@value"].GetString());
-    // ParamsMap& params = graph.get_params();
-    // params[param_tag["@name"]] = param_tag["@value"];
+    // graph.add_param(param_tag["@name"].GetString(), param_tag["@value"].GetString());
 }
 
 // void JSON_Traverser::traverse_param(const Value& param_tag, GraphInfo& graph)
