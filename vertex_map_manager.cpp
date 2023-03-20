@@ -114,9 +114,17 @@ void trial(VertexMapManager& vertices_manager, EdgeMapManager& edges_manager) {
     edges_manager.add_edge(edge_ptr2);
 }
 
+void print_json(VertexMapManager& vertices_manager, EdgeMapManager& edges_manager) {
+    std::cout << "{";
+    std::cout << vertices_manager.to_json();
+    std::cout << edges_manager.to_json();
+    std::cout << "}" << std::endl;
+}
+
 int main() {
     VertexMapManager vertices_manager;
     EdgeMapManager edges_manager;
     trial(vertices_manager, edges_manager);
-    std::cout << "{" << vertices_manager.to_json() << edges_manager.to_json() << "}" << std::endl;
+    print_json(vertices_manager, edges_manager);
+    // std::cout << "{" << vertices_manager.to_json() << edges_manager.to_json() << "}" << std::endl;
 }
