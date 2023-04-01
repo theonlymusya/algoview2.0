@@ -22,7 +22,7 @@ using EdgeMap = std::map<EdgeId, const Edge*>;
 
 class VertexMapManager {
    public:
-    void add_vertex(const Vertex* vertex);
+    VertexId add_vertex(const Vertex* vertex);
     std::string to_json();
     void clean_map();
 
@@ -44,8 +44,10 @@ class EdgeMapManager {
     EdgeMap edges_;
 };
 
-void VertexMapManager::add_vertex(const Vertex* vertex) {
-    vertices_[get_new_vertex_id()] = vertex;
+VertexId VertexMapManager::add_vertex(const Vertex* vertex) {
+    VertexId new_vertex_id = get_new_vertex_id();
+    vertices_[new_vertex_id] = vertex;
+    return new_vertex_id;
 }
 
 void EdgeMapManager::add_edge(const Edge* edge) {
