@@ -4,6 +4,7 @@
 
 using VertexId = int;
 using EdgeId = int;
+using CoordType = int;
 
 struct Vertex {
     int block_id;
@@ -12,7 +13,7 @@ struct Vertex {
 };
 
 struct Edge {
-    int source_vertex_id, target_vertex_id;
+    VertexId source_vertex_id, target_vertex_id;
     std::string type = "0";
 };
 
