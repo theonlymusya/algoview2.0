@@ -12,17 +12,21 @@ namespace algoview_json_traverser {
 using namespace rapidjson;
 using namespace reg_expr;
 
-void parse_value(std::string value_range, std::string& begin, std::string& end) {
-    int first_dot_pos = value_range.find('.');
-    char* c_begin_value = (char*)malloc(first_dot_pos);
-    int len = value_range.copy(c_begin_value, first_dot_pos, 0);
-    c_begin_value[len] = '\0';
-    begin = c_begin_value;
-    first_dot_pos += 2;
-    char* c_end_value = (char*)malloc(value_range.length() - first_dot_pos);
-    len = value_range.copy(c_end_value, value_range.length() - first_dot_pos, first_dot_pos);
-    c_end_value[len] = '\0';
-    end = c_end_value;
+void parse_value(const std::string& str, std::string& left_value, std::string& right_value, char parse_sym) {
+    int first_parse_sym_pos = str.find(parse_sym);
+    char* c_left_value = (char*)malloc(first_parse_sym_pos);
+    int left_value_len = str.copy(c_left_value, first_parse_sym_pos, 0);
+    c_left_value[left_value_len] = '\0';
+    left_value = std::string(c_left_value);
+    if (parse_sym == ',')
+        first_parse_sym_pos++;
+    else if (parse_sym == '.')
+        first_parse_sym_pos += 2;
+    int right_value_len = str.length() - first_parse_sym_pos;
+    char* c_right_value = (char*)malloc(right_value_len);
+    left_value_len = str.copy(c_right_value, right_value_len, first_parse_sym_pos);
+    c_right_value[left_value_len] = '\0';
+    right_value = std::string(c_right_value);
 }
 
 void JSON_Traverser::traverse_arg_element(const Value& arg_tag, GraphInfo& graph) {
@@ -41,7 +45,7 @@ void JSON_Traverser::traverse_arg_element(const Value& arg_tag, GraphInfo& graph
     const ParamsMap& params = graph.get_params();
 
     std::string begin_expr, end_expr;
-    parse_value(arg_tag["@val"].GetString(), begin_expr, end_expr);
+    parse_value(arg_tag["@val"].GetString(), begin_expr, end_expr, '.');
     std::cout << "begin = " << begin_expr << "\tend = " << end_expr << std::endl;
     double begin = calc_expr(begin_expr, params);
     double end = calc_expr(end_expr, params);
@@ -152,7 +156,7 @@ void JSON_Traverser::traverse_block_element(const Value& block_tag, GraphInfo& g
     for (Value::ConstMemberIterator itr = block_tag.MemberBegin(); itr != block_tag.MemberEnd(); ++itr) {
         if (!strcmp(itr->name.GetString(), "@id")) {
             assert(block_tag["@id"].IsString());
-            blocks.add_id(block_tag["@id"].GetString());
+            blocks.add_id(std::stoi(block_tag["@id"].GetString()));
             printf("Type of member %s is %s\n", itr->name.GetString(), kTypeNames[itr->value.GetType()]);
         } else if (!strcmp(itr->name.GetString(), "@dims")) {
             assert(block_tag["@dims"].IsString());

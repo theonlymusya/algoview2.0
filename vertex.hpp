@@ -3,8 +3,6 @@
 #include <vector>
 
 namespace graph_info {
-
-using VertexId = int;
 using VertexType = std::string;
 
 struct VertexTagInfo {
@@ -21,6 +19,7 @@ class VertexTagsInfo {
     void add_type(std::string type);
     void add_src(std::string src);
     void add_bsrc(std::pair<std::string, std::string> bsrc);
+    const std::vector<VertexTagInfo>& get_vertices() const;
 
     void print_vertex_tags() const;
 

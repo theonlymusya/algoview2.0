@@ -3,6 +3,10 @@
 
 namespace graph_info {
 
+const std::vector<VertexTagInfo>& VertexTagsInfo::get_vertices() const {
+    return vertex_tags_;
+};
+
 void VertexTagsInfo::new_vertex() {
     vertex_tags_.emplace_back(VertexTagInfo{});
     n_++;

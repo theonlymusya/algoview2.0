@@ -1,3 +1,4 @@
+#pragma once
 #include <map>
 #include "argument.hpp"
 #include "block.hpp"
@@ -5,8 +6,7 @@
 
 namespace graph_info {
 
-using CoordType = double;
-using ParamsMap = std::map<std::string, CoordType>;
+using ParamsMap = std::map<std::string, double>;
 
 class GraphInfo {
    public:

@@ -29,4 +29,6 @@ class JSON_Traverser {
    private:
 };
 
+void parse_value(const std::string& str, std::string& left_value, std::string& right_value, char parse_sym);
+
 }  // namespace algoview_json_traverser

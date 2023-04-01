@@ -16,8 +16,8 @@ class XML_Parser {
     const Document& get_DOM_tree();
 
    private:
-    std::ifstream file;
-    std::string json_str;
-    Document DOM_tree;
+    std::ifstream file_;
+    std::string json_str_;
+    Document DOM_tree_;
 };
 }  // namespace algoview_xml_parser
