@@ -1,3 +1,4 @@
+#include <fstream>
 #include <iostream>
 #include "block_field.hpp"
 #include "graph_data_manager.hpp"
@@ -32,7 +33,9 @@ int main() {
         blockk.main_cycle(block, params, vertices_manager, edges_manager);
         std::cerr << "5";
     }
-    graph_manager::print_json(vertices_manager, edges_manager);
+    std::ofstream output_file("output.txt");
+    output_file << "{" << vertices_manager.to_json() << edges_manager.to_json() << "}" << std::endl;
+    // graph_manager::print_json(vertices_manager, edges_manager);
 }
 
 // добавить проверку размерности блока и количества аргументов
