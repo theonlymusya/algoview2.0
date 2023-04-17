@@ -41,7 +41,7 @@ int main() {
     for (const auto& block : block_map) {
         delete block.second;
     }
-    std::ofstream output_file("output.txt");
+    std::ofstream output_file("output.json");
     output_file << "{" << vertices_manager.to_json() << edges_manager.to_json() << "}" << std::endl;
     // graph_manager::print_json(vertices_manager, edges_manager);
 }

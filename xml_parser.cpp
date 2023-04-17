@@ -9,7 +9,7 @@ namespace algoview_xml_parser {
 using namespace rapidjson;
 
 void XML_Parser::open_file() {
-    file_.open("test.xml");
+    file_.open("input.xml");
 }
 
 void XML_Parser::xml_to_json() {
