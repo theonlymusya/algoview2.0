@@ -6,7 +6,7 @@
 #include "json_traverser.hpp"
 #include "xml_parser.hpp"
 
-int main() {
+int main(int argc, char* argv[]) {
     using namespace rapidjson;
     using namespace algoview_xml_parser;
     using namespace algoview_json_traverser;
@@ -15,7 +15,7 @@ int main() {
     using namespace graph;
     std::map<BlockId, Block*> block_map;
     XML_Parser parser;
-    parser.parse();
+    parser.parse(argv[1]);
     const Document& tree = parser.get_DOM_tree();
     GraphInfo graph;
     JSON_Traverser::traverse(tree, graph);

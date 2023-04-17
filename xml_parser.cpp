@@ -1,6 +1,7 @@
 #include "xml_parser.hpp"
 #include <iostream>
 #include <sstream>
+#include <string>
 #include "include/rapidjson/document.h"
 #include "include/xml2json.hpp"
 
@@ -8,8 +9,8 @@ namespace algoview_xml_parser {
 
 using namespace rapidjson;
 
-void XML_Parser::open_file() {
-    file_.open("input.xml");
+void XML_Parser::open_file(const std::string& file_name) {
+    file_.open(file_name);
 }
 
 void XML_Parser::xml_to_json() {
@@ -30,8 +31,8 @@ void XML_Parser::parse_json_to_Document() {
     std::cout << "Parsing to document succeeded" << std::endl;
 }
 
-void XML_Parser::parse() {
-    open_file();
+void XML_Parser::parse(const std::string& file_name) {
+    open_file(file_name);
     xml_to_json();
     parse_json_to_Document();
 }

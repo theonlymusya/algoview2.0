@@ -8,11 +8,11 @@ using namespace rapidjson;
 
 class XML_Parser {
    public:
-    void open_file();
+    void open_file(const std::string& file_name);
     void xml_to_json();
     void print_json();
     void parse_json_to_Document();
-    void parse();
+    void parse(const std::string& file_name);
     const Document& get_DOM_tree();
 
    private:
