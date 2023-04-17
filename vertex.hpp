@@ -9,7 +9,7 @@ struct VertexTagInfo {
     VertexType type = "1";
     std::string cond = "";
     std::vector<std::string> src;
-    std::vector<std::pair<std::string, std::string>> bsrc;
+    std::vector<std::pair<int, std::string>> bsrc;
 };
 
 class VertexTagsInfo {
@@ -18,7 +18,7 @@ class VertexTagsInfo {
     void add_condition(std::string cond);
     void add_type(std::string type);
     void add_src(std::string src);
-    void add_bsrc(std::pair<std::string, std::string> bsrc);
+    void add_bsrc(std::pair<int, std::string> bsrc);
     const std::vector<VertexTagInfo>& get_vertices() const;
 
     void print_vertex_tags() const;

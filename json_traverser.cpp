@@ -78,7 +78,7 @@ void JSON_Traverser::traverse_vertex_in_element(const Value& in_tag, GraphInfo& 
     VertexTagsInfo& vertices = block.get_vertices();
     if (in_tag.HasMember("@bsrc")) {
         assert(in_tag["@bsrc"].IsString());
-        vertices.add_bsrc(std::make_pair(in_tag["@bsrc"].GetString(), in_tag["@src"].GetString()));
+        vertices.add_bsrc(std::make_pair(std::stoi(in_tag["@bsrc"].GetString()), in_tag["@src"].GetString()));
         printf("bsrc = %s src = %s\n", in_tag["@bsrc"].GetString(), in_tag["@src"].GetString());
     } else {
         vertices.add_src(in_tag["@src"].GetString());

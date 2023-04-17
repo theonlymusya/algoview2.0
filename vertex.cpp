@@ -24,7 +24,7 @@ void VertexTagsInfo::add_src(std::string src) {
     vertex_tags_[n_].src.push_back(src);
 }
 
-void VertexTagsInfo::add_bsrc(std::pair<std::string, std::string> bsrc) {
+void VertexTagsInfo::add_bsrc(std::pair<int, std::string> bsrc) {
     vertex_tags_[n_].bsrc.push_back(bsrc);
 }
 
