@@ -13,6 +13,7 @@ int main() {
     using namespace graph_info;
     using namespace graph_manager;
     using namespace graph;
+    std::map<BlockId, Block*> block_map;
     XML_Parser parser;
     parser.parse();
     const Document& tree = parser.get_DOM_tree();
@@ -26,12 +27,19 @@ int main() {
     VertexMapManager vertices_manager;
     EdgeMapManager edges_manager;
     std::cerr << "2";
+    int it = 0;
     for (const auto& block : blocks) {
+        std::cerr << "-----------------BLOCK " << it << "-----------------" << std::endl;
         std::cerr << "3";
-        Block blockk(block, 0);
+        Block* new_block_ptr = new Block(block, it);
         std::cerr << "4";
-        blockk.main_cycle(block, params, vertices_manager, edges_manager);
+        (*new_block_ptr).main_cycle(block, params, vertices_manager, edges_manager, block_map);
+        block_map[block.id] = new_block_ptr;
+        it++;
         std::cerr << "5";
+    }
+    for (const auto& block : block_map) {
+        delete block.second;
     }
     std::ofstream output_file("output.txt");
     output_file << "{" << vertices_manager.to_json() << edges_manager.to_json() << "}" << std::endl;

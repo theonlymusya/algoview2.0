@@ -5,6 +5,7 @@
 namespace graph {
 using namespace graph_info;
 using namespace graph_manager;
+using BlockId = int;
 constexpr int ignore_vertex_id = -2;
 
 class Block {
@@ -19,7 +20,11 @@ class Block {
     VertexId get_or_create_source_vertex(VertexMapManager&, BlockId block_id, CoordType i, CoordType j, CoordType k);
     VertexId create_vertex(VertexMapManager&, BlockId, CoordType i, CoordType j, CoordType k, std::string type);
     void create_edge(VertexId src_id, VertexId target_id, EdgeMapManager&);
-    void main_cycle(const BlockTagInfo&, const ParamsMap&, VertexMapManager&, EdgeMapManager&);
+    void main_cycle(const BlockTagInfo&,
+                    const ParamsMap&,
+                    VertexMapManager&,
+                    EdgeMapManager&,
+                    std::map<BlockId, Block*>&);
 
    private:
     int i_shift_ = 0;
@@ -28,4 +33,5 @@ class Block {
     int block_number_shift_ = 2;
     std::vector<std::vector<std::vector<CoordType>>> coords_field_;
 };
+
 }  // namespace graph

@@ -3,6 +3,7 @@ all: algoview
 
 algoview: main.o xml_parser.o json_traverser.o argument.o vertex.o block.o graph_info.o expr.o graph_data_manager.o block_field.o
 	g++ main.o xml_parser.o json_traverser.o argument.o vertex.o block.o graph_info.o expr.o graph_data_manager.o block_field.o $(FLAGS) -o main
+	rm *.o
 
 main.o: main.cpp
 	g++ -c main.cpp $(FLAGS)

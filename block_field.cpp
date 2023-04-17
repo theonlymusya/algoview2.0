@@ -43,14 +43,11 @@ VertexId Block::get_vertex_id(CoordType i, CoordType j, CoordType k) {
     std::cerr << "             i " << i << " i_shift " << i_shift_ << std::endl;
     std::cerr << "             j " << j << " j_shift " << j_shift_ << std::endl;
     std::cerr << "             k " << k << " k_shift " << k_shift_ << std::endl;
-    if (i + i_shift_ < 0 || j + j_shift_ < 0 || k + k_shift_ + block_number * block_number_shift_ < 0 ||
-        i + i_shift_ > coords_field_.size() || j + j_shift_ > coords_field_[0].size() ||
-        k + k_shift_ + block_number * block_number_shift_ > coords_field_[0][0].size())
+    if (i + i_shift_ < 0 || j + j_shift_ < 0 || k + k_shift_ < 0 || i + i_shift_ > coords_field_.size() ||
+        j + j_shift_ > coords_field_[0].size() || k + k_shift_ > coords_field_[0][0].size())
         return ignore_vertex_id;
-    std::cerr << "vertex id "
-              << coords_field_[i + i_shift_][j + j_shift_][k + k_shift_ + block_number * block_number_shift_]
-              << std::endl;
-    return coords_field_[i + i_shift_][j + j_shift_][k + k_shift_ + block_number * block_number_shift_];
+    std::cerr << "vertex id " << coords_field_[i + i_shift_][j + j_shift_][k + k_shift_] << std::endl;
+    return coords_field_[i + i_shift_][j + j_shift_][k + k_shift_];
 }
 
 VertexId Block::create_vertex(VertexMapManager& vertices_manager,
@@ -67,15 +64,13 @@ VertexId Block::create_vertex(VertexMapManager& vertices_manager,
     std::cerr << "j " << j << " j_shift " << j_shift_ << std::endl;
     std::cerr << "k " << k << " k_shift " << k_shift_ << std::endl;
     std::cerr << coords_field_.size();
-    coords_field_[i + i_shift_][j + j_shift_][k + k_shift_ + block_number * block_number_shift_] = new_vertex_id;
+    coords_field_[i + i_shift_][j + j_shift_][k + k_shift_] = new_vertex_id;
     for (int i = 0; i <= i_range; i++)
         for (int j = 0; j <= j_range; j++)
             for (int k = 0; k <= k_range; k++)
                 std::cout << coords_field_[i][j][k] << " ";
     std::cerr << std::endl;
-    std::cerr << "new vertex id "
-              << coords_field_[i + i_shift_][j + j_shift_][k + k_shift_ + block_number * block_number_shift_]
-              << std::endl;
+    std::cerr << "new vertex id " << coords_field_[i + i_shift_][j + j_shift_][k + k_shift_] << std::endl;
     std::cerr << "21";
     return new_vertex_id;
 }
@@ -99,6 +94,7 @@ VertexId Block::get_or_create_source_vertex(VertexMapManager& vertices_manager,
 }
 
 void Block::create_edge(VertexId src_id, VertexId target_id, EdgeMapManager& edges_manager) {
+    std::cerr << "Я создаю связь между " << src_id << " и " << target_id << std::endl;
     Edge* new_edge_ptr = new Edge{src_id, target_id};
     edges_manager.add_edge(new_edge_ptr);
 }
@@ -144,7 +140,8 @@ void get_src_vertex_coords(const std::string& src_string,
 void Block::main_cycle(const BlockTagInfo& block_info,
                        const ParamsMap& params,
                        VertexMapManager& vertices_manager,
-                       EdgeMapManager& edges_manager) {
+                       EdgeMapManager& edges_manager,
+                       std::map<BlockId, Block*>& block_map) {
     const auto& args = block_info.get_args();
     const auto& arg = args.get_args();
     const auto& vertices = block_info.get_vertices();
@@ -182,8 +179,29 @@ void Block::main_cycle(const BlockTagInfo& block_info,
                             std::cerr << "k src" << src_k << std::endl;
                             VertexId src_vertex_id =
                                 get_or_create_source_vertex(vertices_manager, block_id, src_i, src_j, src_k);
-                            if (src_vertex_id != ignore_vertex_id)
+                            if (src_vertex_id != ignore_vertex_id) {
+                                std::cerr << "Я должен создать связь" << std::endl;
                                 create_edge(src_vertex_id, vertex_id, edges_manager);
+                            }
+                        }
+                        for (const auto& bsrc : vertex.bsrc) {
+                            BlockId bsrc_block_id = bsrc.first;
+                            if (block_map.empty()) {
+                                assert("Неверный порядок объявляемых блоков");
+                            }
+                            auto bsrc_block_ptr = block_map[bsrc_block_id];
+                            int bsrc_dim = bsrc_block_ptr->dim;
+                            int bsrc_i, bsrc_j, bsrc_k;
+                            get_src_vertex_coords(bsrc.second, bsrc_dim, bsrc_i, bsrc_j, bsrc_k, vars_map);
+                            std::cerr << "i bsrc" << bsrc_i << std::endl;
+                            std::cerr << "j bsrc" << bsrc_j << std::endl;
+                            std::cerr << "k bsrc" << bsrc_k << std::endl;
+                            VertexId bsrc_vertex_id = bsrc_block_ptr->get_or_create_source_vertex(
+                                vertices_manager, bsrc_block_id, bsrc_i, bsrc_j, bsrc_k);
+                            if (bsrc_vertex_id != ignore_vertex_id) {
+                                std::cerr << "Я должен создать связь" << std::endl;
+                                create_edge(bsrc_vertex_id, vertex_id, edges_manager);
+                            }
                         }
                     }
                 }
