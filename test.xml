@@ -1,42 +1,28 @@
-<!-- Скалярное произведение векторов, вещественная версия,
-последовательно-параллельный вариант
-N нацело делится на P -->
-<?xml version="1.0" encoding="UTF-8"?>
 <algo>
-  <params>
-		<param name = "N" type = "int" value="24"></param>
-		<param name = "P" type = "int" value="4"></param>
-  </params>
-<!-- Попарные произведения -->
-  <block id = "0" dims = "2">
-		<arg name = "i" val = "1..P"></arg>
-		<arg name = "j" val = "1..(N-1)/P+1"></arg>
-		<vertex condition = "" type = "1">
-		</vertex>
-  </block>
-<!-- Накопления частичных сумм -->
-  <block id = "1" dims = "2">
-		<arg name = "i" val = "1..P"></arg>
-		<arg name = "j" val = "2..(N-1)/P+1"></arg>
-		<vertex condition = "j=2" type = "2">
-			<in bsrc = "0" src = "i, 1"></in>
-			<in bsrc = "0" src = "i, 2"></in>
-		</vertex>
-		<vertex condition = "j>2" type = "2">
-			<in src = "i, j - 1"></in>
-			<in bsrc = "0" src = "i, j"></in>
-		</vertex>
-  </block>
-<!-- Глобальная сумма -->
-  <block id = "2" dims = "1">
-		<arg name = "i" val = "2..P"></arg>
-		<vertex condition = "i=2" type = "2">
-			<in bsrc = "1" src = "1, (N-1)/P+1"></in>
-			<in bsrc = "1" src = "2, (N-1)/P+1"></in>
-		</vertex>
-		<vertex condition = "i>2" type = "2">
-			<in bsrc = "1" src = "i, (N-1)/P+1"></in>
-			<in src = "i - 1"></in>
-		</vertex>
-  </block>
+   <params>
+	<param name = "N" type = "int" value = "4"></param>
+   </params>
+   <block id = "0" dims = "1">
+	<arg name = "i" val = "1..N"></arg>
+	<vertex condition = "" type = "1">
+		<in src = "i – 2"></in>
+	</vertex>
+   </block>
+   <block id = "1" dims = "2">
+	<arg name = "i" val = "1..N"></arg>
+	<arg name = "j" val = "1..N"></arg>
+	<vertex condition = "" type = "1">
+                <in bsrc = "0" src = "i"></in>
+	</vertex>
+   </block>
+   <block id = "2" dims = "3">
+	<arg name = "i" val = "1..N"></arg>
+	<arg name = "j" val = "1..N"></arg>
+        <arg name = "k" val = "1..N"></arg>
+	<vertex condition = "(k == 1) || (i == 1)" type = "1">
+	</vertex>
+	<vertex condition = "(k > 1) && (i > 1)" type = "1">
+		<in src = "1, j, 1"></in>
+	</vertex>
+   </block>
 </algo>
