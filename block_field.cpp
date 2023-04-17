@@ -10,7 +10,7 @@ using namespace algoview_json_traverser;
 using namespace reg_expr;
 using VarsMap = std::map<std::string, double>;
 
-Block::Block(const BlockTagInfo& _block_info) {
+Block::Block(const BlockTagInfo& _block_info, int _block_number) {
     const auto& args = _block_info.get_args();
     const auto& arg = args.get_args();
     i_range = arg[0].end - arg[0].begin;
@@ -36,14 +36,21 @@ Block::Block(const BlockTagInfo& _block_info) {
     j_shift_ = 0 - arg[1].begin;
     k_shift_ = 0 - arg[2].begin;
     dim = _block_info.dim;
+    block_number = _block_number;
 }
 
 VertexId Block::get_vertex_id(CoordType i, CoordType j, CoordType k) {
-    std::cerr << "vertex id " << coords_field_[i + i_shift_][j + j_shift_][k + k_shift_] << std::endl;
     std::cerr << "             i " << i << " i_shift " << i_shift_ << std::endl;
     std::cerr << "             j " << j << " j_shift " << j_shift_ << std::endl;
     std::cerr << "             k " << k << " k_shift " << k_shift_ << std::endl;
-    return coords_field_[i + i_shift_][j + j_shift_][k + k_shift_];
+    if (i + i_shift_ < 0 || j + j_shift_ < 0 || k + k_shift_ + block_number * block_number_shift_ < 0 ||
+        i + i_shift_ > coords_field_.size() || j + j_shift_ > coords_field_[0].size() ||
+        k + k_shift_ + block_number * block_number_shift_ > coords_field_[0][0].size())
+        return ignore_vertex_id;
+    std::cerr << "vertex id "
+              << coords_field_[i + i_shift_][j + j_shift_][k + k_shift_ + block_number * block_number_shift_]
+              << std::endl;
+    return coords_field_[i + i_shift_][j + j_shift_][k + k_shift_ + block_number * block_number_shift_];
 }
 
 VertexId Block::create_vertex(VertexMapManager& vertices_manager,
@@ -52,20 +59,23 @@ VertexId Block::create_vertex(VertexMapManager& vertices_manager,
                               CoordType j,
                               CoordType k,
                               std::string type = "0") {
-    Vertex* new_vertex_ptr = new Vertex{block_id, i + i_shift_, j + j_shift_, k + k_shift_, type};
+    Vertex* new_vertex_ptr =
+        new Vertex{block_id, i + i_shift_, j + j_shift_, k + k_shift_ + block_number * block_number_shift_, type};
     VertexId new_vertex_id = vertices_manager.add_vertex(new_vertex_ptr);
     std::cerr << "new vertex id " << new_vertex_id << std::endl;
     std::cerr << "i " << i << " i_shift " << i_shift_ << std::endl;
     std::cerr << "j " << j << " j_shift " << j_shift_ << std::endl;
     std::cerr << "k " << k << " k_shift " << k_shift_ << std::endl;
     std::cerr << coords_field_.size();
-    coords_field_[i + i_shift_][j + j_shift_][k + k_shift_] = new_vertex_id;
+    coords_field_[i + i_shift_][j + j_shift_][k + k_shift_ + block_number * block_number_shift_] = new_vertex_id;
     for (int i = 0; i <= i_range; i++)
         for (int j = 0; j <= j_range; j++)
             for (int k = 0; k <= k_range; k++)
                 std::cout << coords_field_[i][j][k] << " ";
     std::cerr << std::endl;
-    std::cerr << "new vertex id " << coords_field_[i + i_shift_][j + j_shift_][k + k_shift_] << std::endl;
+    std::cerr << "new vertex id "
+              << coords_field_[i + i_shift_][j + j_shift_][k + k_shift_ + block_number * block_number_shift_]
+              << std::endl;
     std::cerr << "21";
     return new_vertex_id;
 }
@@ -76,7 +86,12 @@ VertexId Block::get_or_create_source_vertex(VertexMapManager& vertices_manager,
                                             CoordType j,
                                             CoordType k) {
     std::cerr << "meow" << std::endl;
+    std::cerr << "i " << i << std::endl;
+    std::cerr << "j " << j << std::endl;
+    std::cerr << "k " << k << std::endl;
     VertexId vertex_id = get_vertex_id(i, j, k);
+    if (vertex_id == ignore_vertex_id)
+        return ignore_vertex_id;
     if (vertex_id != -1)
         return vertex_id;
     vertex_id = create_vertex(vertices_manager, block_id, i, j, k, "0");
@@ -144,12 +159,14 @@ void Block::main_cycle(const BlockTagInfo& block_info,
                 std::cerr << "8";
                 for (const auto& vertex : vertices.get_vertices()) {
                     std::cerr << "9";
+                    //{
                     if (arg[0].name != "_")
                         change_var_value_map(arg[0].name, i, vars_map);
-                    if (arg[0].name != "_")
+                    if (arg[1].name != "_")
                         change_var_value_map(arg[1].name, j, vars_map);
-                    if (arg[0].name != "_")
+                    if (arg[2].name != "_")
                         change_var_value_map(arg[2].name, k, vars_map);
+                    //}
                     std::cerr << "10" << std::endl;
                     std::cerr << calc_expr(vertex.cond, vars_map) << std::endl;
                     if (calc_expr(vertex.cond, vars_map)) {
@@ -165,7 +182,8 @@ void Block::main_cycle(const BlockTagInfo& block_info,
                             std::cerr << "k src" << src_k << std::endl;
                             VertexId src_vertex_id =
                                 get_or_create_source_vertex(vertices_manager, block_id, src_i, src_j, src_k);
-                            create_edge(src_vertex_id, vertex_id, edges_manager);
+                            if (src_vertex_id != ignore_vertex_id)
+                                create_edge(src_vertex_id, vertex_id, edges_manager);
                         }
                     }
                 }

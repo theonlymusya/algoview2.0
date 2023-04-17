@@ -27,7 +27,7 @@ int main() {
     std::cerr << "2";
     for (const auto& block : blocks) {
         std::cerr << "3";
-        Block blockk(block);
+        Block blockk(block, 0);
         std::cerr << "4";
         blockk.main_cycle(block, params, vertices_manager, edges_manager);
         std::cerr << "5";
