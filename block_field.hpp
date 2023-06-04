@@ -30,7 +30,7 @@ class Block {
     int i_shift_ = 0;
     int j_shift_ = 0;
     int k_shift_ = 0;
-    int block_number_shift_ = 2;
+    int local_block_shift_ = 2;
     std::vector<std::vector<std::vector<CoordType>>> coords_field_;
 };
 
