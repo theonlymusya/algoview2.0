@@ -137,6 +137,15 @@ void get_src_vertex_coords(const std::string& src_string,
     std::cerr << "k src" << k << std::endl;
 }
 
+int get_max(const std::vector<int>& levels) {
+    int max_level = 0;
+    for (auto level : levels) {
+        if (level > max_level)
+            max_level = level;
+    }
+    return max_level;
+}
+
 void Block::main_cycle(const BlockTagInfo& block_info,
                        const ParamsMap& params,
                        VertexMapManager& vertices_manager,
@@ -170,6 +179,7 @@ void Block::main_cycle(const BlockTagInfo& block_info,
                         std::cerr << "11";
                         VertexId vertex_id = create_vertex(vertices_manager, block_id, i, j, k, vertex.type);
                         std::cerr << "12";
+                        std::vector<int> src_vertices_levels;
                         for (const auto& src : vertex.src) {
                             std::cerr << "13";
                             int src_i, src_j, src_k;
@@ -179,8 +189,10 @@ void Block::main_cycle(const BlockTagInfo& block_info,
                             std::cerr << "k src" << src_k << std::endl;
                             VertexId src_vertex_id =
                                 get_or_create_source_vertex(vertices_manager, block_id, src_i, src_j, src_k);
+                            // src_vertices_levels.push_back(vertices_manager.get_vertex_level(src_vertex_id));
                             if (src_vertex_id != ignore_vertex_id) {
                                 std::cerr << "Я должен создать связь" << std::endl;
+                                src_vertices_levels.push_back(vertices_manager.get_vertex_level(src_vertex_id));
                                 create_edge(src_vertex_id, vertex_id, edges_manager);
                             }
                         }
@@ -198,10 +210,16 @@ void Block::main_cycle(const BlockTagInfo& block_info,
                             std::cerr << "k bsrc" << bsrc_k << std::endl;
                             VertexId bsrc_vertex_id = bsrc_block_ptr->get_or_create_source_vertex(
                                 vertices_manager, bsrc_block_id, bsrc_i, bsrc_j, bsrc_k);
+                            // src_vertices_levels.push_back(vertices_manager.get_vertex_level(bsrc_vertex_id));
                             if (bsrc_vertex_id != ignore_vertex_id) {
                                 std::cerr << "Я должен создать связь" << std::endl;
+                                src_vertices_levels.push_back(vertices_manager.get_vertex_level(bsrc_vertex_id));
                                 create_edge(bsrc_vertex_id, vertex_id, edges_manager);
                             }
+                        }
+                        if (!src_vertices_levels.empty()) {
+                            int level = get_max(src_vertices_levels) + 1;
+                            vertices_manager.add_vertex_level(vertex_id, level);
                         }
                     }
                 }

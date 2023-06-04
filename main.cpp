@@ -55,3 +55,4 @@ int main(int argc, char* argv[]) {
 // calc_expr была шаблонной, но не компилировалась, теперь обрабатывает только double(?)
 // переписать asserts (?)
 // const block_info??
+// поправить генерацию json без дуг

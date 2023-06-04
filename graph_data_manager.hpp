@@ -11,6 +11,7 @@ struct Vertex {
     int block_id;
     int i, j, k;
     std::string type = "0";
+    int level = 0;
 };
 
 struct Edge {
@@ -18,12 +19,14 @@ struct Edge {
     std::string type = "0";
 };
 
-using VertexMap = std::map<VertexId, const Vertex*>;
+using VertexMap = std::map<VertexId, Vertex*>;
 using EdgeMap = std::map<EdgeId, const Edge*>;
 
 class VertexMapManager {
    public:
-    VertexId add_vertex(const Vertex* vertex);
+    VertexId add_vertex(Vertex* vertex);
+    void add_vertex_level(VertexId vertex_id, int level);
+    int get_vertex_level(VertexId vertex_id);
     std::string to_json();
     void clean_map();
 
