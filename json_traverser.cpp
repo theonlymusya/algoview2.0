@@ -19,7 +19,7 @@ void parse_value(const std::string& str, std::string& left_value, std::string& r
     c_left_value[left_value_len] = '\0';
     left_value = std::string(c_left_value);
     if (parse_sym == ',')
-        first_parse_sym_pos += 2;
+        first_parse_sym_pos++;
     else if (parse_sym == '.')
         first_parse_sym_pos += 2;
     int right_value_len = str.length() - first_parse_sym_pos;
