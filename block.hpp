@@ -1,11 +1,11 @@
 #pragma once
 #include <vector>
 #include "argument.hpp"
+#include "logger.hpp"
 #include "vertex.hpp"
 
 namespace graph_info {
 using BlockId = int;
-
 class BlockTagInfo {
    public:
     BlockId id = 0;

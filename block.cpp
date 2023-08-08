@@ -2,7 +2,12 @@
 #include "cassert"
 #include "iostream"
 
+const std::string file_name = "block.cpp";
+
 namespace graph_info {
+
+using namespace logger;
+
 ArgTagsInfo& BlockTagInfo::get_args() {
     return args_;
 }
@@ -43,13 +48,38 @@ int BlockTagsInfo::is_block_id_unique(BlockId id) {
 }
 
 void BlockTagsInfo::add_id(BlockId id) {
-    assert(is_block_id_unique(id) && "ID блока используется повторно");
+    const std::string func_name = "add_id";
+    auto& logger = Logger::get_instance();
+    logger.log_file_enter(func_name, file_name);
+    logger.log_info_start_msg("adding block id to internal structure");
+
+    // assert(is_block_id_unique(id) && "ID блока используется повторно");
+    if (!is_block_id_unique(id)) {
+        logger.log_err_msg(func_name, file_name, "Block id is used twice");
+        exit(1);
+    }
     blocks_[n_].id = id;
+
+    logger.log_info_finish_msg("adding block id to internal structure");
+    logger.log_file_exit(func_name, file_name);
 }
 
 void BlockTagsInfo::add_dim(int dim) {
-    assert((dim > 0 && dim < 4) && "Неверная размерность блока");
+    const std::string func_name = "add_dim";
+    auto& logger = Logger::get_instance();
+    logger.log_file_enter(func_name, file_name);
+    logger.log_info_start_msg("adding block dim to internal structure");
+
+    // assert((dim > 0 && dim < 4) && "Неверная размерность блока");
+    if (!(dim > 0 && dim < 4)) {
+        std::string msg = "Invalid dimension of block " + blocks_[n_].id;
+        logger.log_err_msg(func_name, file_name, msg);
+        exit(1);
+    }
     blocks_[n_].dim = dim;
+
+    logger.log_info_finish_msg("adding block dim to internal structure");
+    logger.log_file_exit(func_name, file_name);
 }
 
 void BlockTagsInfo::print_block_tags() const {

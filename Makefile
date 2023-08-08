@@ -1,9 +1,8 @@
 FLAGS = -g -std=c++17
 all: algoview
 
-algoview: main.o xml_parser.o json_traverser.o argument.o vertex.o block.o graph_info.o expr.o graph_data_manager.o block_field.o
-	g++ main.o xml_parser.o json_traverser.o argument.o vertex.o block.o graph_info.o expr.o graph_data_manager.o block_field.o $(FLAGS) -o main
-	rm *.o
+algoview: main.o xml_parser.o json_traverser.o argument.o vertex.o block.o graph_info.o expr.o graph_data_manager.o block_field.o logger.o
+	g++ main.o xml_parser.o json_traverser.o argument.o vertex.o block.o graph_info.o expr.o graph_data_manager.o block_field.o logger.o $(FLAGS) -o main
 
 main.o: main.cpp
 	g++ -c main.cpp $(FLAGS)
@@ -34,6 +33,9 @@ graph_data_manager.o: graph_data_manager.cpp
 
 block_field.o: block_field.cpp
 	g++ -c block_field.cpp $(FLAGS)
+
+logger.o: logger.cpp
+	g++ -c logger.cpp $(FLAGS)
 
 clean:
 	rm -rf *.o main
