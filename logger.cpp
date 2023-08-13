@@ -34,8 +34,9 @@ void Logger::log_info_finish_msg(const std::string& msg) {
 }
 
 void Logger::log_char_msg(const std::string& msg, const char* detail) {
-    log_file_ << info_log << msg;
-    fprintf(stderr, "%s\n", detail);
+    std::string str_detail(detail);
+    log_file_ << info_log << msg << detail << std::endl;
+    // fprintf(log_file_, "%s\n", detail);
 }
 
 void Logger::log_err_msg(const std::string& func_name, const std::string& file_name, const std::string& msg) {

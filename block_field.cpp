@@ -47,12 +47,6 @@ VertexId Block::get_vertex_id(CoordType i, CoordType j, CoordType k) {
     auto& logger = Logger::get_instance();
     logger.log_file_enter(func_name, file_name);
     logger.log_info_start_msg("finding vertex id");
-    std::string msg = "i = " + std::to_string(i) + " i_shift = " + std::to_string(i_shift_);
-    logger.log_info_msg(msg);
-    msg = "j = " + std::to_string(j) + " j_shift = " + std::to_string(j_shift_);
-    logger.log_info_msg(msg);
-    msg = "k = " + std::to_string(j) + " k_shift = " + std::to_string(k_shift_);
-    logger.log_info_msg(msg);
 
     if (i + i_shift_ < 0 || j + j_shift_ < 0 || k + k_shift_ < 0 || i + i_shift_ >= coords_field_.size() ||
         j + j_shift_ >= coords_field_[0].size() || k + k_shift_ >= coords_field_[0][0].size()) {
@@ -60,9 +54,42 @@ VertexId Block::get_vertex_id(CoordType i, CoordType j, CoordType k) {
         return ignore_vertex_id;
     }
 
-    msg = "Founded vertex id = " + coords_field_[i + i_shift_][j + j_shift_][k + k_shift_];
+    std::string msg = "Founded vertex id = " + std::to_string(coords_field_[i + i_shift_][j + j_shift_][k + k_shift_]);
+    logger.log_info_msg(msg);
     logger.log_file_exit(func_name, file_name);
     return coords_field_[i + i_shift_][j + j_shift_][k + k_shift_];
+}
+
+VertexId Block::get_or_create_current_vertex(VertexMapManager& vertices_manager,
+                                             BlockId block_id,
+                                             CoordType i,
+                                             CoordType j,
+                                             CoordType k,
+                                             std::string type,
+                                             int& vertex_not_new_flag) {
+    const std::string func_name = "get_or_create_current_vertex";
+    auto& logger = Logger::get_instance();
+    logger.log_file_enter(func_name, file_name);
+    std::string msg =
+        "Get or create vertex with coords : " + std::to_string(i) + " " + std::to_string(j) + " " + std::to_string(k);
+    logger.log_info_msg(msg);
+    VertexId vertex_id = get_vertex_id(i, j, k);
+    if (vertex_id == ignore_vertex_id) {
+        logger.log_warn_msg(func_name, file_name, "Cur vertex is ignored");
+        return ignore_vertex_id;
+    }
+    if (vertex_id != -1) {
+        vertex_not_new_flag = 1;
+        return vertex_id;
+    }
+    msg = "Vertex with physical coords [" + std::to_string(i + i_shift_) + ", " + std::to_string(j + j_shift_) + ", " +
+          std::to_string(k + k_shift_) + "] have been created earlier";
+    logger.log_warn_msg(func_name, file_name, msg);
+
+    vertex_id = create_vertex(vertices_manager, block_id, i, j, k, type);
+
+    logger.log_file_enter(func_name, file_name);
+    return vertex_id;
 }
 
 VertexId Block::create_vertex(VertexMapManager& vertices_manager,
@@ -112,9 +139,11 @@ VertexId Block::get_or_create_source_vertex(VertexMapManager& vertices_manager,
         return ignore_vertex_id;
     }
     if (vertex_id != -1) {
-        logger.log_warn_msg(func_name, file_name, "Src vertex will be created as i/o vertex");
         return vertex_id;
     }
+    msg = "Src vertex with physical coords [" + std::to_string(i + i_shift_) + ", " + std::to_string(j + j_shift_) +
+          ", " + std::to_string(k + k_shift_) + "] will be created as i/o vertex";
+    logger.log_warn_msg(func_name, file_name, msg);
     vertex_id = create_vertex(vertices_manager, block_id, i, j, k, "0");
 
     logger.log_file_enter(func_name, file_name);
@@ -126,7 +155,7 @@ void Block::create_edge(VertexId src_id, VertexId target_id, EdgeMapManager& edg
     auto& logger = Logger::get_instance();
     logger.log_file_enter(func_name, file_name);
     logger.log_info_start_msg("creating edge");
-    logger.log_info_msg("src vertex = " + std::to_string(src_id) + "target vertex id = " + std::to_string(target_id));
+    logger.log_info_msg("src vertex = " + std::to_string(src_id) + " target vertex id = " + std::to_string(target_id));
 
     Edge* new_edge_ptr = new Edge{src_id, target_id};
     edges_manager.add_edge(new_edge_ptr);
@@ -173,7 +202,7 @@ void get_src_vertex_coords(const std::string& src_string,
     auto& logger = Logger::get_instance();
     logger.log_file_enter(func_name, file_name);
     logger.log_info_start_msg("getting scr vertex coords values");
-    std::string msg = "source block dimentional = " + dim;
+    std::string msg = "Source block dimentional = " + std::to_string(dim);
     logger.log_info_msg(msg);
 
     std::string i_str, j_str, k_str, jk_str;
@@ -229,6 +258,32 @@ int get_max(const std::vector<int>& levels) {
     return max_level;
 }
 
+void array_to_str(const std::vector<VertexId> array, std::string& str) {
+    for (auto elem : array) {
+        str += std::to_string(elem);
+        str += " ";
+    }
+}
+
+void change_levels_rec(const EdgeMapManager& edges_manager,
+                       VertexMapManager& vertices_manager,
+                       VertexId vertex_id,
+                       int level) {
+    auto& logger = Logger::get_instance();
+    std::vector<VertexId> target_vertex_ids;
+    edges_manager.get_target_vertex_ids(target_vertex_ids, vertex_id);
+    if (target_vertex_ids.empty())
+        return;
+    std::string str;
+    array_to_str(target_vertex_ids, str);
+    logger.log_info_msg("Here are vertex ids which level must be changed : " + str);
+    for (auto target_vertex_id : target_vertex_ids) {
+        if (level >= vertices_manager.get_vertex_level(vertex_id))
+            vertices_manager.add_vertex_level(target_vertex_id, level + 1);
+        change_levels_rec(edges_manager, vertices_manager, target_vertex_id, level + 1);
+    }
+}
+
 void Block::main_cycle(const BlockTagInfo& block_info,
                        const ParamsMap& params,
                        VertexMapManager& vertices_manager,
@@ -266,7 +321,9 @@ void Block::main_cycle(const BlockTagInfo& block_info,
                     //}
                     logger.log_info_start_msg("calculating condition");
                     if (calc_expr(vertex.cond, vars_map)) {
-                        VertexId vertex_id = create_vertex(vertices_manager, block_id, i, j, k, vertex.type);
+                        int cur_vertex_not_new_flag = 0;
+                        VertexId vertex_id = get_or_create_current_vertex(vertices_manager, block_id, i, j, k,
+                                                                          vertex.type, cur_vertex_not_new_flag);
                         std::vector<int> src_vertices_levels;
                         logger.log_info_start_msg("iterating src");
                         for (const auto& src : vertex.src) {
@@ -274,7 +331,6 @@ void Block::main_cycle(const BlockTagInfo& block_info,
                             get_src_vertex_coords(src, block_info.dim, src_i, src_j, src_k, vars_map);
                             VertexId src_vertex_id =
                                 get_or_create_source_vertex(vertices_manager, block_id, src_i, src_j, src_k);
-                            // src_vertices_levels.push_back(vertices_manager.get_vertex_level(src_vertex_id));
                             if (src_vertex_id != ignore_vertex_id) {
                                 src_vertices_levels.push_back(vertices_manager.get_vertex_level(src_vertex_id));
                                 create_edge(src_vertex_id, vertex_id, edges_manager);
@@ -285,7 +341,6 @@ void Block::main_cycle(const BlockTagInfo& block_info,
                         for (const auto& bsrc : vertex.bsrc) {
                             BlockId bsrc_block_id = bsrc.first;
                             if (block_map.empty()) {
-                                // assert("Неверный порядок объявляемых блоков");
                                 logger.log_err_msg(func_name, file_name, "Source block is not defined yet");
                                 exit(1);
                             }
@@ -295,7 +350,6 @@ void Block::main_cycle(const BlockTagInfo& block_info,
                             get_src_vertex_coords(bsrc.second, bsrc_dim, bsrc_i, bsrc_j, bsrc_k, vars_map);
                             VertexId bsrc_vertex_id = bsrc_block_ptr->get_or_create_source_vertex(
                                 vertices_manager, bsrc_block_id, bsrc_i, bsrc_j, bsrc_k);
-                            // src_vertices_levels.push_back(vertices_manager.get_vertex_level(bsrc_vertex_id));
                             if (bsrc_vertex_id != ignore_vertex_id) {
                                 src_vertices_levels.push_back(vertices_manager.get_vertex_level(bsrc_vertex_id));
                                 create_edge(bsrc_vertex_id, vertex_id, edges_manager);
@@ -303,10 +357,20 @@ void Block::main_cycle(const BlockTagInfo& block_info,
                         }
                         logger.log_info_finish_msg("iterating bsrc");
                         if (!src_vertices_levels.empty()) {
-                            logger.log_info_start_msg("determining vertex level");
+                            logger.log_info_start_msg("determining current vertex level");
                             int level = get_max(src_vertices_levels) + 1;
+                            int cur_level = vertices_manager.get_vertex_level(vertex_id);
+                            if (cur_vertex_not_new_flag && cur_level != level) {
+                                std::string msg = "Current vertex's (id = " + std::to_string(vertex_id) +
+                                                  ") level must be changed from " + std::to_string(cur_level) + " to " +
+                                                  std::to_string(level);
+                                logger.log_info_msg(msg);
+                                logger.log_info_start_msg("changing target vertex levels recursively");
+                                change_levels_rec(edges_manager, vertices_manager, vertex_id, level);
+                                logger.log_info_finish_msg("changing target vertex levels");
+                            }
                             vertices_manager.add_vertex_level(vertex_id, level);
-                            logger.log_info_finish_msg("determining vertex level");
+                            logger.log_info_finish_msg("determining current vertex level");
                         }
                     }
                 }

@@ -1,6 +1,7 @@
 #pragma once
 #include <map>
 #include <string>
+#include <vector>
 
 namespace graph_manager {
 using VertexId = int;
@@ -39,6 +40,7 @@ class VertexMapManager {
 class EdgeMapManager {
    public:
     void add_edge(const Edge* edge);
+    void get_target_vertex_ids(std::vector<VertexId>& target_vertex_ids, VertexId vertex_id) const;
     std::string to_json();
     void clean_map();
 
