@@ -65,8 +65,7 @@ VertexId Block::get_or_create_current_vertex(VertexMapManager& vertices_manager,
                                              CoordType i,
                                              CoordType j,
                                              CoordType k,
-                                             std::string type,
-                                             int& vertex_not_new_flag) {
+                                             std::string type) {
     const std::string func_name = "get_or_create_current_vertex";
     auto& logger = Logger::get_instance();
     logger.log_file_enter(func_name, file_name);
@@ -79,13 +78,14 @@ VertexId Block::get_or_create_current_vertex(VertexMapManager& vertices_manager,
         return ignore_vertex_id;
     }
     if (vertex_id != -1) {
-        vertex_not_new_flag = 1;
-        return vertex_id;
+        // if current vertex already exists, previous one that is i/o vertex should be relocated
+        // for this reason, we mark previuos vertex as extra
+        msg = "Vertex with physical coords [" + std::to_string(i + i_shift_) + ", " + std::to_string(j + j_shift_) +
+              ", " + std::to_string(k + k_shift_) + "] have been created earlier";
+        logger.log_warn_msg(func_name, file_name, msg);
+        // vertex_not_new_flag = 1;
+        vertices_manager.add_info(vertex_id, "extra");
     }
-    msg = "Vertex with physical coords [" + std::to_string(i + i_shift_) + ", " + std::to_string(j + j_shift_) + ", " +
-          std::to_string(k + k_shift_) + "] have been created earlier";
-    logger.log_warn_msg(func_name, file_name, msg);
-
     vertex_id = create_vertex(vertices_manager, block_id, i, j, k, type);
 
     logger.log_file_enter(func_name, file_name);
@@ -319,11 +319,14 @@ void Block::main_cycle(const BlockTagInfo& block_info,
                     if (arg[2].name != "_")
                         change_var_value_map(arg[2].name, k, vars_map);
                     //}
-                    logger.log_info_start_msg("calculating condition");
-                    if (calc_expr(vertex.cond, vars_map)) {
-                        int cur_vertex_not_new_flag = 0;
-                        VertexId vertex_id = get_or_create_current_vertex(vertices_manager, block_id, i, j, k,
-                                                                          vertex.type, cur_vertex_not_new_flag);
+                    logger.log_info_start_msg("calculating condition " + vertex.cond);
+                    double cond = calc_expr(vertex.cond, vars_map);
+                    logger.log_info_msg("Result = " + std::to_string(cond));
+                    logger.log_info_finish_msg("calculating condition");
+                    if (cond) {
+                        // int cur_vertex_not_new_flag = 0;
+                        VertexId vertex_id =
+                            get_or_create_current_vertex(vertices_manager, block_id, i, j, k, vertex.type);
                         std::vector<int> src_vertices_levels;
                         logger.log_info_start_msg("iterating src");
                         for (const auto& src : vertex.src) {
@@ -359,16 +362,16 @@ void Block::main_cycle(const BlockTagInfo& block_info,
                         if (!src_vertices_levels.empty()) {
                             logger.log_info_start_msg("determining current vertex level");
                             int level = get_max(src_vertices_levels) + 1;
-                            int cur_level = vertices_manager.get_vertex_level(vertex_id);
-                            if (cur_vertex_not_new_flag && cur_level != level) {
-                                std::string msg = "Current vertex's (id = " + std::to_string(vertex_id) +
-                                                  ") level must be changed from " + std::to_string(cur_level) + " to " +
-                                                  std::to_string(level);
-                                logger.log_info_msg(msg);
-                                logger.log_info_start_msg("changing target vertex levels recursively");
-                                change_levels_rec(edges_manager, vertices_manager, vertex_id, level);
-                                logger.log_info_finish_msg("changing target vertex levels");
-                            }
+                            // int cur_level = vertices_manager.get_vertex_level(vertex_id);
+                            // if (cur_vertex_not_new_flag && cur_level != level) {
+                            //     std::string msg = "Current vertex's (id = " + std::to_string(vertex_id) +
+                            //                       ") level must be changed from " + std::to_string(cur_level) + " to
+                            //                       " + std::to_string(level);
+                            //     logger.log_info_msg(msg);
+                            //     logger.log_info_start_msg("changing target vertex levels recursively");
+                            //     change_levels_rec(edges_manager, vertices_manager, vertex_id, level);
+                            //     logger.log_info_finish_msg("changing target vertex levels");
+                            // }
                             vertices_manager.add_vertex_level(vertex_id, level);
                             logger.log_info_finish_msg("determining current vertex level");
                         }

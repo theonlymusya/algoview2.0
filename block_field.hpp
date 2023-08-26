@@ -23,8 +23,7 @@ class Block {
                                           CoordType i,
                                           CoordType j,
                                           CoordType k,
-                                          std::string type,
-                                          int& flag);
+                                          std::string type);
     VertexId create_vertex(VertexMapManager&, BlockId, CoordType i, CoordType j, CoordType k, std::string type);
     void create_edge(VertexId src_id, VertexId target_id, EdgeMapManager&);
     void main_cycle(const BlockTagInfo&,

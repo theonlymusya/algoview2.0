@@ -28,6 +28,10 @@ void VertexMapManager::add_vertex_level(VertexId vertex_id, int level) {
     vertices_[vertex_id]->level = level;
 }
 
+void VertexMapManager::add_info(VertexId vertex_id, const std::string& info) {
+    vertices_[vertex_id]->info = info;
+}
+
 int VertexMapManager::get_vertex_level(VertexId vertex_id) {
     return vertices_[vertex_id]->level;
 }
@@ -39,6 +43,7 @@ std::string VertexMapManager::to_json() {
         std::string vertex_string = "\n\t\t{ \"id\": " + std::to_string(vertex.first) + ", \"coordinates\": [" +
                                     std::to_string(vertex.second->i) + ", " + std::to_string(vertex.second->j) + ", " +
                                     std::to_string(vertex.second->k) + "], \"type\": \"" + vertex.second->type + "\"" +
+                                    ", \"info\": \"" + vertex.second->info + "\"" +
                                     ", \"level\": " + std::to_string(vertex.second->level) + " },";
         result_string += vertex_string;
     }
