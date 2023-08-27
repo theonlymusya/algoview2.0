@@ -61,6 +61,7 @@ VertexId Block::get_vertex_id(CoordType i, CoordType j, CoordType k) {
 }
 
 VertexId Block::get_or_create_current_vertex(VertexMapManager& vertices_manager,
+                                             GraphCharactManager& graph_character_manager,
                                              BlockId block_id,
                                              CoordType i,
                                              CoordType j,
@@ -83,16 +84,15 @@ VertexId Block::get_or_create_current_vertex(VertexMapManager& vertices_manager,
         msg = "Vertex with physical coords [" + std::to_string(i + i_shift_) + ", " + std::to_string(j + j_shift_) +
               ", " + std::to_string(k + k_shift_) + "] have been created earlier";
         logger.log_warn_msg(func_name, file_name, msg);
-        // vertex_not_new_flag = 1;
-        vertices_manager.add_info(vertex_id, "extra");
     }
-    vertex_id = create_vertex(vertices_manager, block_id, i, j, k, type);
+    vertex_id = create_vertex(vertices_manager, graph_character_manager, block_id, i, j, k, type);
 
     logger.log_file_enter(func_name, file_name);
     return vertex_id;
 }
 
 VertexId Block::create_vertex(VertexMapManager& vertices_manager,
+                              GraphCharactManager& graph_charact_manager,
                               BlockId block_id,
                               CoordType i,
                               CoordType j,
@@ -108,6 +108,8 @@ VertexId Block::create_vertex(VertexMapManager& vertices_manager,
 
     Vertex* new_vertex_ptr =
         new Vertex{block_id, i + i_shift_, j + j_shift_, k + k_shift_ + (cur_block_shift - local_block_shift_), type};
+    if (type != "0")
+        graph_charact_manager.inc_vertices_counter();
     VertexId new_vertex_id = vertices_manager.add_vertex(new_vertex_ptr);
     logger.log_info_msg("New vertex = " + std::to_string(new_vertex_id));
 
@@ -123,6 +125,7 @@ VertexId Block::create_vertex(VertexMapManager& vertices_manager,
 }
 
 VertexId Block::get_or_create_source_vertex(VertexMapManager& vertices_manager,
+                                            GraphCharactManager& graph_charact_manager,
                                             BlockId block_id,
                                             CoordType i,
                                             CoordType j,
@@ -144,20 +147,31 @@ VertexId Block::get_or_create_source_vertex(VertexMapManager& vertices_manager,
     msg = "Src vertex with physical coords [" + std::to_string(i + i_shift_) + ", " + std::to_string(j + j_shift_) +
           ", " + std::to_string(k + k_shift_) + "] will be created as i/o vertex";
     logger.log_warn_msg(func_name, file_name, msg);
-    vertex_id = create_vertex(vertices_manager, block_id, i, j, k, "0");
+    vertex_id = create_vertex(vertices_manager, graph_charact_manager, block_id, i, j, k, "0");
 
     logger.log_file_enter(func_name, file_name);
     return vertex_id;
 }
 
-void Block::create_edge(VertexId src_id, VertexId target_id, EdgeMapManager& edges_manager) {
+void Block::create_edge(VertexId src_id,
+                        VertexId target_id,
+                        EdgeMapManager& edges_manager,
+                        GraphCharactManager& graph_character_manager,
+                        VertexMapManager& vertices_manager) {
     const std::string func_name = "create_edge";
     auto& logger = Logger::get_instance();
     logger.log_file_enter(func_name, file_name);
     logger.log_info_start_msg("creating edge");
     logger.log_info_msg("src vertex = " + std::to_string(src_id) + " target vertex id = " + std::to_string(target_id));
 
-    Edge* new_edge_ptr = new Edge{src_id, target_id};
+    // Edge* new_edge_ptr = new Edge{src_id, target_id};
+    Edge* new_edge_ptr;
+    if (vertices_manager.get_vertex_level(src_id)) {
+        new_edge_ptr = new Edge{src_id, target_id, "1"};
+        graph_character_manager.inc_edges_counter();
+    } else {
+        new_edge_ptr = new Edge{src_id, target_id};
+    }
     edges_manager.add_edge(new_edge_ptr);
 
     logger.log_info_finish_msg("creating edge");
@@ -288,6 +302,7 @@ void Block::main_cycle(const BlockTagInfo& block_info,
                        const ParamsMap& params,
                        VertexMapManager& vertices_manager,
                        EdgeMapManager& edges_manager,
+                       GraphCharactManager& graph_charact_manager,
                        std::map<BlockId, Block*>& block_map) {
     const std::string func_name = "create_var_value_map";
     auto& logger = Logger::get_instance();
@@ -325,18 +340,19 @@ void Block::main_cycle(const BlockTagInfo& block_info,
                     logger.log_info_finish_msg("calculating condition");
                     if (cond) {
                         // int cur_vertex_not_new_flag = 0;
-                        VertexId vertex_id =
-                            get_or_create_current_vertex(vertices_manager, block_id, i, j, k, vertex.type);
+                        VertexId vertex_id = get_or_create_current_vertex(vertices_manager, graph_charact_manager,
+                                                                          block_id, i, j, k, vertex.type);
                         std::vector<int> src_vertices_levels;
                         logger.log_info_start_msg("iterating src");
                         for (const auto& src : vertex.src) {
                             int src_i, src_j, src_k;
                             get_src_vertex_coords(src, block_info.dim, src_i, src_j, src_k, vars_map);
-                            VertexId src_vertex_id =
-                                get_or_create_source_vertex(vertices_manager, block_id, src_i, src_j, src_k);
+                            VertexId src_vertex_id = get_or_create_source_vertex(
+                                vertices_manager, graph_charact_manager, block_id, src_i, src_j, src_k);
                             if (src_vertex_id != ignore_vertex_id) {
                                 src_vertices_levels.push_back(vertices_manager.get_vertex_level(src_vertex_id));
-                                create_edge(src_vertex_id, vertex_id, edges_manager);
+                                create_edge(src_vertex_id, vertex_id, edges_manager, graph_charact_manager,
+                                            vertices_manager);
                             }
                         }
                         logger.log_info_finish_msg("iterating src");
@@ -352,10 +368,11 @@ void Block::main_cycle(const BlockTagInfo& block_info,
                             int bsrc_i, bsrc_j, bsrc_k;
                             get_src_vertex_coords(bsrc.second, bsrc_dim, bsrc_i, bsrc_j, bsrc_k, vars_map);
                             VertexId bsrc_vertex_id = bsrc_block_ptr->get_or_create_source_vertex(
-                                vertices_manager, bsrc_block_id, bsrc_i, bsrc_j, bsrc_k);
+                                vertices_manager, graph_charact_manager, bsrc_block_id, bsrc_i, bsrc_j, bsrc_k);
                             if (bsrc_vertex_id != ignore_vertex_id) {
                                 src_vertices_levels.push_back(vertices_manager.get_vertex_level(bsrc_vertex_id));
-                                create_edge(bsrc_vertex_id, vertex_id, edges_manager);
+                                create_edge(bsrc_vertex_id, vertex_id, edges_manager, graph_charact_manager,
+                                            vertices_manager);
                             }
                         }
                         logger.log_info_finish_msg("iterating bsrc");
@@ -373,6 +390,10 @@ void Block::main_cycle(const BlockTagInfo& block_info,
                             //     logger.log_info_finish_msg("changing target vertex levels");
                             // }
                             vertices_manager.add_vertex_level(vertex_id, level);
+                            // if vertex has level = 0 these vertices are ignored, since level = 0 is not
+                            // considered to be a part of the graph (extra part)
+                            graph_charact_manager.inc_level_vertex_counter(level);
+                            graph_charact_manager.add_critical_lenght(level);
                             logger.log_info_finish_msg("determining current vertex level");
                         }
                     }

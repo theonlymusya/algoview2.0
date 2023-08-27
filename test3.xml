@@ -1,0 +1,14 @@
+<!-- НАХОЖДЕНИЕ СУММЫ ЭЛЕМЕНТОВ МАССИВА СДВАИВАНИЕМ -->
+<algo>
+    <params>
+        <param name="n" type="int" value="8"></param>
+    </params>
+    <block dims="2">
+        <arg name="i" val="1..((2)log(n)+1)"></arg>
+        <arg name="j" val="1..n"></arg>
+        <vertex condition="(i>1)and(j<=(n/(2^(i-1))))" type="1">
+            <in src="i-1,j*2-1"></in>
+            <in src="i-1,j*2"></in>
+        </vertex>
+    </block>
+</algo>

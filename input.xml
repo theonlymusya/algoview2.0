@@ -1,28 +1,22 @@
+
 <algo>
-   <params>
-	<param name = "N" type = "int" value = "4"></param>
-   </params>
-   <block id = "0" dims = "1">
-	<arg name = "i" val = "1..N"></arg>
-	<vertex condition = "" type = "1">
-		<in src = "i – 2"></in>
-	</vertex>
-   </block>
-   <block id = "1" dims = "2">
-	<arg name = "i" val = "1..N"></arg>
-	<arg name = "j" val = "1..N"></arg>
-	<vertex condition = "" type = "1">
-                <in bsrc = "0" src = "i"></in>
-	</vertex>
-   </block>
-   <block id = "2" dims = "3">
-	<arg name = "i" val = "1..N"></arg>
-	<arg name = "j" val = "1..N"></arg>
-        <arg name = "k" val = "1..N"></arg>
-	<vertex condition = "(k == 1) || (i == 1)" type = "1">
-	</vertex>
-	<vertex condition = "(k > 1) && (i > 1)" type = "1">
-		<in src = "1, j, 1"></in>
-	</vertex>
-   </block>
+<params>
+<param name = "N" type = "int" value = "3"></param>
+</params>
+
+<block id="0" dims="2">
+<arg name = "I" val = "1..N"></arg>
+<arg name = "J" val = "1..2^N"></arg>
+
+<vertex condition = "(J - 1) % (2^I) < 2^(I - 1)" type = "1">
+<in src = "I - 1, J"></in>
+<in src = "I - 1, J + 2^(I -1)"></in>
+</vertex>
+
+<vertex condition = "(J - 1) % (2^I) >= 2^(I - 1)" type = "2">
+<in src = "I - 1, J"></in>
+<in src = "I - 1, J - 2^(I - 1)"></in>
+</vertex>
+
+</block>
 </algo>

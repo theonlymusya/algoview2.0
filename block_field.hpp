@@ -17,19 +17,32 @@ class Block {
     int block_number = 0;
     Block(const BlockTagInfo& _block_info, int block_number);
     VertexId get_vertex_id(CoordType i, CoordType j, CoordType k);
-    VertexId get_or_create_source_vertex(VertexMapManager&, BlockId block_id, CoordType i, CoordType j, CoordType k);
+    VertexId get_or_create_source_vertex(VertexMapManager&,
+                                         GraphCharactManager&,
+                                         BlockId block_id,
+                                         CoordType i,
+                                         CoordType j,
+                                         CoordType k);
     VertexId get_or_create_current_vertex(VertexMapManager&,
+                                          GraphCharactManager&,
                                           BlockId,
                                           CoordType i,
                                           CoordType j,
                                           CoordType k,
                                           std::string type);
-    VertexId create_vertex(VertexMapManager&, BlockId, CoordType i, CoordType j, CoordType k, std::string type);
-    void create_edge(VertexId src_id, VertexId target_id, EdgeMapManager&);
+    VertexId create_vertex(VertexMapManager&,
+                           GraphCharactManager&,
+                           BlockId,
+                           CoordType i,
+                           CoordType j,
+                           CoordType k,
+                           std::string type);
+    void create_edge(VertexId src_id, VertexId target_id, EdgeMapManager&, GraphCharactManager&, VertexMapManager&);
     void main_cycle(const BlockTagInfo&,
                     const ParamsMap&,
                     VertexMapManager&,
                     EdgeMapManager&,
+                    GraphCharactManager&,
                     std::map<BlockId, Block*>&);
 
    private:

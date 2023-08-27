@@ -38,11 +38,12 @@ int main(int argc, char* argv[]) {
     auto& params = graph.get_params();
     VertexMapManager vertices_manager;
     EdgeMapManager edges_manager;
+    GraphCharactManager graph_charact_manager;
     logger.log_info_msg("--------------------------3rd STEP--------------------------");
     int it = 0;
     for (const auto& block : blocks) {
         Block* new_block_ptr = new Block(block, it);
-        (*new_block_ptr).main_cycle(block, params, vertices_manager, edges_manager, block_map);
+        (*new_block_ptr).main_cycle(block, params, vertices_manager, edges_manager, graph_charact_manager, block_map);
         block_map[block.id] = new_block_ptr;
         it++;
     }
@@ -50,7 +51,8 @@ int main(int argc, char* argv[]) {
         delete block.second;
     }
     std::ofstream output_file("output.json");
-    output_file << "{" << vertices_manager.to_json() << edges_manager.to_json() << "}" << std::endl;
+    output_file << "{" << vertices_manager.to_json() << edges_manager.to_json() << graph_charact_manager.to_json()
+                << "}" << std::endl;
     // graph_manager::print_json(vertices_manager, edges_manager);
 }
 

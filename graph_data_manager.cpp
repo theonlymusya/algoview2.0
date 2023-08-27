@@ -5,6 +5,15 @@
 namespace graph_manager {
 using namespace logger;
 
+int get_max(const std::vector<int>& levels) {
+    int max_level = 0;
+    for (auto level : levels) {
+        if (level > max_level)
+            max_level = level;
+    }
+    return max_level;
+}
+
 VertexId VertexMapManager::add_vertex(Vertex* vertex) {
     VertexId new_vertex_id = get_new_vertex_id();
     vertices_[new_vertex_id] = vertex;
@@ -36,6 +45,37 @@ int VertexMapManager::get_vertex_level(VertexId vertex_id) {
     return vertices_[vertex_id]->level;
 }
 
+void GraphCharactManager::inc_level_vertex_counter(int level) {
+    if (graph_charact_.each_level_vertex_num.size() <= level) {
+        graph_charact_.each_level_vertex_num.resize(level + 1);
+    }
+    graph_charact_.each_level_vertex_num[level]++;
+}
+
+void GraphCharactManager::add_critical_lenght(int length) {
+    if (length > graph_charact_.critical_length)
+        graph_charact_.critical_length = length;
+}
+
+void GraphCharactManager::calculate_width() {
+    graph_charact_.width = get_max(graph_charact_.each_level_vertex_num);
+}
+
+std::string GraphCharactManager::to_json() {
+    std::string result_string;
+    calculate_width();
+    result_string += "\n\t\"characteristics\": [\n\t\t{ \"vertex_num\": ";
+    result_string += std::to_string(graph_charact_.vertex_num);
+    result_string += ", \"edge_num\": ";
+    result_string += std::to_string(graph_charact_.edge_num);
+    result_string += ", \"critical_length\": ";
+    result_string += std::to_string(graph_charact_.critical_length);
+    result_string += ", \"width\": ";
+    result_string += std::to_string(graph_charact_.width);
+    result_string += "}\n\t]\n";
+    return result_string;
+}
+
 std::string VertexMapManager::to_json() {
     std::string result_string;
     result_string += "\n\t\"vertices\": [";
@@ -43,7 +83,6 @@ std::string VertexMapManager::to_json() {
         std::string vertex_string = "\n\t\t{ \"id\": " + std::to_string(vertex.first) + ", \"coordinates\": [" +
                                     std::to_string(vertex.second->i) + ", " + std::to_string(vertex.second->j) + ", " +
                                     std::to_string(vertex.second->k) + "], \"type\": \"" + vertex.second->type + "\"" +
-                                    ", \"info\": \"" + vertex.second->info + "\"" +
                                     ", \"level\": " + std::to_string(vertex.second->level) + " },";
         result_string += vertex_string;
     }
@@ -66,7 +105,7 @@ std::string EdgeMapManager::to_json() {
     }
     if (result_string.back() != '[')
         result_string.pop_back();
-    result_string += "\n\t]\n";
+    result_string += "\n\t],\n";
     clean_map();
     return result_string;
 }
