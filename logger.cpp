@@ -1,5 +1,6 @@
 #include "logger.hpp"
 #include <iostream>
+#include <string>
 
 namespace logger {
 
@@ -45,5 +46,37 @@ void Logger::log_err_msg(const std::string& func_name, const std::string& file_n
 
 void Logger::log_warn_msg(const std::string& func_name, const std::string& file_name, const std::string& msg) {
     log_file_ << warn_log << func_log << func_name << file_log << file_name << ": " << msg << std::endl;
+}
+
+std::string Logger::warn_to_json() {
+    std::string result_string = "\t\"warnings\": [";
+    for (const auto& warn : user_warnings_) {
+        result_string += "\n\t\t\"";
+        result_string += warn;
+        result_string += "\",";
+    }
+    if (result_string.back() != '[') {
+        result_string.pop_back();
+        result_string += "\n\t],\n";
+    } else {
+        result_string += "],\n";
+    }
+    return result_string;
+}
+
+std::string Logger::err_to_json() {
+    std::string result_string = "\t\"errors\": [";
+    for (const auto& error : user_errors_) {
+        result_string += "\n\t\t\"";
+        result_string += error;
+        result_string += "\",";
+    }
+    if (result_string.back() != '[') {
+        result_string.pop_back();
+        result_string += "\n\t]\n";
+    } else {
+        result_string += "]\n";
+    }
+    return result_string;
 }
 }  // namespace logger

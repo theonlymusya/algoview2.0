@@ -6,6 +6,7 @@
 #include "block.hpp"
 #include "expr.hpp"
 #include "logger.hpp"
+#include "output_file_manager.hpp"
 #include "vertex.hpp"
 
 const std::string file_name = "json_traverse.cpp";
@@ -15,6 +16,7 @@ namespace algoview_json_traverser {
 using namespace rapidjson;
 using namespace reg_expr;
 using namespace logger;
+using namespace output_file_manager;
 
 void parse_value(const std::string& str, std::string& left_value, std::string& right_value, char parse_sym) {
     const std::string func_name = "parse_value";
@@ -26,16 +28,25 @@ void parse_value(const std::string& str, std::string& left_value, std::string& r
     int first_parse_sym_pos = str.find(parse_sym);
     if (first_parse_sym_pos == std::string::npos) {
         logger.log_err_msg(func_name, file_name, "Incorrect string or symbol");
+        logger.add_user_error("Incorrect string or symbol in expression: " + str);
+        auto& output_file = OutputFileManager::get_instance();
+        output_file.fatal_error_report();
         exit(1);
     }
     char* c_left_value = (char*)malloc(first_parse_sym_pos);
     if (c_left_value == NULL) {
         logger.log_err_msg(func_name, file_name, "Malloc error");
+        logger.add_user_error("System error");
+        auto& output_file = OutputFileManager::get_instance();
+        output_file.fatal_error_report();
         exit(1);
     }
     int left_value_len = str.copy(c_left_value, first_parse_sym_pos, 0);
     if (left_value_len == 0) {
         logger.log_err_msg(func_name, file_name, "Copy error");
+        logger.add_user_error("System error");
+        auto& output_file = OutputFileManager::get_instance();
+        output_file.fatal_error_report();
         exit(1);
     }
     c_left_value[left_value_len] = '\0';
@@ -48,11 +59,17 @@ void parse_value(const std::string& str, std::string& left_value, std::string& r
     char* c_right_value = (char*)malloc(right_value_len);
     if (c_right_value == NULL) {
         logger.log_err_msg(func_name, file_name, "Malloc error");
+        logger.add_user_error("System error");
+        auto& output_file = OutputFileManager::get_instance();
+        output_file.fatal_error_report();
         exit(1);
     }
     left_value_len = str.copy(c_right_value, right_value_len, first_parse_sym_pos);
     if (left_value_len == 0) {
         logger.log_err_msg(func_name, file_name, "Copy error");
+        logger.add_user_error("System error");
+        auto& output_file = OutputFileManager::get_instance();
+        output_file.fatal_error_report();
         exit(1);
     }
     c_right_value[left_value_len] = '\0';
@@ -67,30 +84,43 @@ void JSON_Traverser::traverse_arg_element(const Value& arg_tag, GraphInfo& graph
     auto& logger = Logger::get_instance();
     logger.log_file_enter(func_name, file_name);
 
-    // assert(arg_tag.IsObject() && "Тег arg не является объектом");
     if (!arg_tag.IsObject()) {
         logger.log_err_msg(func_name, file_name, "Arg tag is not an Object");
+        logger.add_user_error("System error");
+        auto& output_file = OutputFileManager::get_instance();
+        output_file.fatal_error_report();
         exit(1);
     }
-    // assert(arg_tag.HasMember("@name") && "Не указано имя аргумента");
     if (!arg_tag.HasMember("@name")) {
         logger.log_err_msg(func_name, file_name, "Arg tag has no name");
+        logger.add_user_error("Argument tag has no name");
+        auto& output_file = OutputFileManager::get_instance();
+        output_file.fatal_error_report();
         exit(1);
     }
-    // assert(arg_tag["@name"].IsString());
     if (!arg_tag["@name"].IsString()) {
         logger.log_err_msg(func_name, file_name, "Arg name is not a string");
+        logger.add_user_error("System error");
+        auto& output_file = OutputFileManager::get_instance();
+        output_file.fatal_error_report();
         exit(1);
     }
-    // printf("name = %s\n", arg_tag["@name"].GetString());
     logger.log_char_msg("Arg name = ", arg_tag["@name"].GetString());
-    // assert(arg_tag.HasMember("@val") && "Не указано значение аргумента");
     if (!arg_tag.HasMember("@val")) {
         logger.log_err_msg(func_name, file_name, "Arg value range not specified");
+        logger.add_user_error("Argument value range not specified");
+        auto& output_file = OutputFileManager::get_instance();
+        output_file.fatal_error_report();
         exit(1);
     }
-    assert(arg_tag["@val"].IsString());
-    // printf("val = %s\n", arg_tag["@val"].GetString());
+    // assert(arg_tag["@val"].IsString());
+    if (!arg_tag["@val"].IsString()) {
+        logger.log_err_msg(func_name, file_name, "Arg value is not a string");
+        logger.add_user_error("System error");
+        auto& output_file = OutputFileManager::get_instance();
+        output_file.fatal_error_report();
+        exit(1);
+    }
     logger.log_char_msg("Arg val range = ", arg_tag["@val"].GetString());
 
     BlockTagsInfo& blocks = graph.get_blocks();
@@ -127,8 +157,10 @@ void JSON_Traverser::traverse_arg(const Value& arg_tag, GraphInfo& graph) {
     } else if (arg_tag.IsObject()) {
         traverse_arg_element(arg_tag, graph);
     } else {
-        // assert("Тег arg имеет неправильный тип");
         logger.log_err_msg(func_name, file_name, "Arg tag has undefined type");
+        logger.add_user_error("System error");
+        auto& output_file = OutputFileManager::get_instance();
+        output_file.fatal_error_report();
         exit(1);
     }
 
@@ -141,28 +173,36 @@ void JSON_Traverser::traverse_vertex_in_element(const Value& in_tag, GraphInfo& 
     auto& logger = Logger::get_instance();
     logger.log_file_enter(func_name, file_name);
 
-    // assert(in_tag.IsObject() && "Тег in не является объектом");
     if (!in_tag.IsObject()) {
         logger.log_err_msg(func_name, file_name, "In tag is not an Object");
+        logger.add_user_error("System error");
+        auto& output_file = OutputFileManager::get_instance();
+        output_file.fatal_error_report();
         exit(1);
     }
-    // assert(in_tag.HasMember("@src") && "Не указан src");
     if (!in_tag.HasMember("@src")) {
         logger.log_err_msg(func_name, file_name, "Src attr not specified");
+        logger.add_user_error("Src attribute of tag <in> is not specified");
+        auto& output_file = OutputFileManager::get_instance();
+        output_file.fatal_error_report();
         exit(1);
     }
-    // assert(in_tag["@src"].IsString());
     if (!in_tag["@src"].IsString()) {
         logger.log_err_msg(func_name, file_name, "Src tag is not a string");
+        logger.add_user_error("System error");
+        auto& output_file = OutputFileManager::get_instance();
+        output_file.fatal_error_report();
         exit(1);
     }
     BlockTagsInfo& blocks = graph.get_blocks();
     BlockTagInfo& block = blocks.get_last_block();
     VertexTagsInfo& vertices = block.get_vertices();
     if (in_tag.HasMember("@bsrc")) {
-        // assert(in_tag["@bsrc"].IsString());
         if (!in_tag["@bsrc"].IsString()) {
             logger.log_err_msg(func_name, file_name, "Bsrc tag is not a string");
+            logger.add_user_error("System error");
+            auto& output_file = OutputFileManager::get_instance();
+            output_file.fatal_error_report();
             exit(1);
         }
         logger.log_char_msg("bsrc block id = ", in_tag["@bsrc"].GetString());
@@ -190,8 +230,10 @@ void JSON_Traverser::traverse_vertex_in(const Value& in_tag, GraphInfo& graph) {
     } else if (in_tag.IsObject()) {
         traverse_vertex_in_element(in_tag, graph);
     } else {
-        // assert("Тег in имеет неправильный тип");
         logger.log_err_msg(func_name, file_name, "In tag has undefined type");
+        logger.add_user_error("System error");
+        auto& output_file = OutputFileManager::get_instance();
+        output_file.fatal_error_report();
         exit(1);
     }
 
@@ -204,19 +246,25 @@ void JSON_Traverser::traverse_vertex_element(const Value& vertex_tag, GraphInfo&
     auto& logger = Logger::get_instance();
     logger.log_file_enter(func_name, file_name);
 
-    // assert(vertex_tag.HasMember("@condition") && "Не указан condition");
     if (!vertex_tag.HasMember("@condition")) {
         logger.log_err_msg(func_name, file_name, "Vertex tag has no condition");
+        logger.add_user_error("Vertex tag has no attribute condition (it should be, even if condition is empty)");
+        auto& output_file = OutputFileManager::get_instance();
+        output_file.fatal_error_report();
         exit(1);
     }
-    // assert(vertex_tag["@condition"].IsString());
     if (!vertex_tag["@condition"].IsString()) {
         logger.log_err_msg(func_name, file_name, "Condition is not a string");
+        logger.add_user_error("System error");
+        auto& output_file = OutputFileManager::get_instance();
+        output_file.fatal_error_report();
         exit(1);
     }
-    // assert(vertex_tag["@type"].IsString());
     if (!vertex_tag["@type"].IsString()) {
         logger.log_err_msg(func_name, file_name, "Type is not a string");
+        logger.add_user_error("System error");
+        auto& output_file = OutputFileManager::get_instance();
+        output_file.fatal_error_report();
         exit(1);
     }
     BlockTagsInfo& blocks = graph.get_blocks();
@@ -239,6 +287,9 @@ void JSON_Traverser::traverse_vertex_element(const Value& vertex_tag, GraphInfo&
         } else {
             // assert("Неопознанный тег внутри vertex");
             logger.log_err_msg(func_name, file_name, "Undefined tag inside tag vertex");
+            logger.add_user_error("Undefined tag inside tag vertex");
+            auto& output_file = OutputFileManager::get_instance();
+            output_file.fatal_error_report();
             exit(1);
         }
     }
@@ -261,6 +312,9 @@ void JSON_Traverser::traverse_vertex(const Value& vertex_tag, GraphInfo& graph) 
     } else {
         // assert("Тег vertex имеет неправильный тип");
         logger.log_err_msg(func_name, file_name, "Vertex tag has undefined type");
+        logger.add_user_error("System error");
+        auto& output_file = OutputFileManager::get_instance();
+        output_file.fatal_error_report();
         exit(1);
     }
 
@@ -272,25 +326,34 @@ void JSON_Traverser::traverse_block_element(const Value& block_tag, GraphInfo& g
     const std::string func_name = "traverse_block_element";
     auto& logger = Logger::get_instance();
     logger.log_file_enter(func_name, file_name);
-    // assert(block_tag.IsObject() && "Тег block не является объектом");
+
     if (!block_tag.IsObject()) {
         logger.log_err_msg(func_name, file_name, "Block tag is not an Object");
+        logger.add_user_error("System error");
+        auto& output_file = OutputFileManager::get_instance();
+        output_file.fatal_error_report();
         exit(1);
     }
     if (block_tag.HasMember("id"))
-        // assert(block_tag["@id"].IsString());
         if (!block_tag["@id"].IsString()) {
             logger.log_err_msg(func_name, file_name, "Id attr is not a string");
+            logger.add_user_error("System error");
+            auto& output_file = OutputFileManager::get_instance();
+            output_file.fatal_error_report();
             exit(1);
         }
-    // assert(block_tag.HasMember("@dims") && "Не указана размерность пространства");
     if (!block_tag.HasMember("@dims")) {
         logger.log_err_msg(func_name, file_name, "Dimensional not specified");
+        logger.add_user_error("Block dimensional not specified");
+        auto& output_file = OutputFileManager::get_instance();
+        output_file.fatal_error_report();
         exit(1);
     }
-    // assert(block_tag["@dims"].IsString());
     if (!block_tag["@dims"].IsString()) {
         logger.log_err_msg(func_name, file_name, "Dimensional is not a string");
+        logger.add_user_error("System error");
+        auto& output_file = OutputFileManager::get_instance();
+        output_file.fatal_error_report();
         exit(1);
     }
     BlockTagsInfo& blocks = graph.get_blocks();
@@ -320,6 +383,9 @@ void JSON_Traverser::traverse_block_element(const Value& block_tag, GraphInfo& g
         } else {
             // assert("Неопознанный тег внутри block");
             logger.log_err_msg(func_name, file_name, "Undefined tag inside block tag");
+            logger.add_user_error("Undefined tag inside block tag");
+            auto& output_file = OutputFileManager::get_instance();
+            output_file.fatal_error_report();
             exit(1);
         }
     }
@@ -339,8 +405,10 @@ void JSON_Traverser::traverse_block(const Value& block_tag, GraphInfo& graph) {
     } else if (block_tag.IsObject()) {
         traverse_block_element(block_tag, graph);
     } else {
-        // assert("Тег block имеет неправильный тип");
         logger.log_err_msg(func_name, file_name, "Block tag has undefined type");
+        logger.add_user_error("System error");
+        auto& output_file = OutputFileManager::get_instance();
+        output_file.fatal_error_report();
         exit(1);
     }
 
@@ -354,34 +422,39 @@ void JSON_Traverser::traverse_param_element(const Value& param_tag, GraphInfo& g
     logger.log_file_enter(func_name, file_name);
     logger.log_info_start_msg("handling parameter");
 
-    // assert(param_tag.IsObject() && "Тег param не является объектом");
     if (!param_tag.IsObject()) {
         logger.log_err_msg(func_name, file_name, "Param tag is not an Object");
+        logger.add_user_error("System error");
+        auto& output_file = OutputFileManager::get_instance();
+        output_file.fatal_error_report();
         exit(1);
     }
-    // assert(param_tag.HasMember("@name") && "Не указано имя параметра");
-    // *for user
     if (!param_tag.HasMember("@name")) {
         logger.log_err_msg(func_name, file_name, "Parameter has no name");
+        logger.add_user_error("Parameter has no name");
+        auto& output_file = OutputFileManager::get_instance();
+        output_file.fatal_error_report();
         exit(1);
     }
-    // assert(param_tag["@name"].IsString());
-    // *for user
     if (!param_tag["@name"].IsString()) {
         logger.log_err_msg(func_name, file_name, "Parameter's name is not a string");
+        logger.add_user_error("System error");
+        auto& output_file = OutputFileManager::get_instance();
+        output_file.fatal_error_report();
         exit(1);
     }
-    // printf("name = %s\n", param_tag["@name"].GetString());
-    // assert(param_tag.HasMember("@type") && "Не указан тип параметра");
-    // *for user
     if (!param_tag.HasMember("@type")) {
         logger.log_err_msg(func_name, file_name, "Parameter has no type");
+        logger.add_user_error("Parameter has no type");
+        auto& output_file = OutputFileManager::get_instance();
+        output_file.fatal_error_report();
         exit(1);
     }
-    // assert(param_tag["@type"].IsString());
-    // *for user
     if (!param_tag["@type"].IsString()) {
         logger.log_err_msg(func_name, file_name, "Parameter's type is not a string");
+        logger.add_user_error("System error");
+        auto& output_file = OutputFileManager::get_instance();
+        output_file.fatal_error_report();
         exit(1);
     }
     // printf("type = %s\n", param_tag["@type"].GetString());
@@ -395,11 +468,17 @@ void JSON_Traverser::traverse_param_element(const Value& param_tag, GraphInfo& g
     //*for user
     if (!param_tag.HasMember("@value")) {
         logger.log_err_msg(func_name, file_name, "Parameter has no value");
+        logger.add_user_error("Parameter has no value");
+        auto& output_file = OutputFileManager::get_instance();
+        output_file.fatal_error_report();
         exit(1);
     }
     // assert(param_tag["@value"].IsString());
     if (!param_tag["@value"].IsString()) {
         logger.log_err_msg(func_name, file_name, "Parameter's value is not a string");
+        logger.add_user_error("System error");
+        auto& output_file = OutputFileManager::get_instance();
+        output_file.fatal_error_report();
         exit(1);
     }
     // printf("val = %s\n", param_tag["@value"].GetString());
@@ -421,8 +500,10 @@ void JSON_Traverser::traverse_param(const Value& param_tag, GraphInfo& graph) {
     } else if (param_tag.IsObject()) {
         traverse_param_element(param_tag, graph);
     } else {
-        // assert("Тег param имеет неправильный тип");
         logger.log_err_msg(func_name, file_name, "Param tag has undefined type");
+        logger.add_user_error("System error");
+        auto& output_file = OutputFileManager::get_instance();
+        output_file.fatal_error_report();
         exit(1);
     }
 
@@ -435,15 +516,18 @@ void JSON_Traverser::traverse_params(const Value& params_tag, GraphInfo& graph) 
     logger.log_file_enter(func_name, file_name);
     logger.log_info_start_msg("traversing parameters");
 
-    // assert(params_tag.IsObject() && "Тег params не является объектом");
     if (!params_tag.IsObject()) {
         logger.log_err_msg(func_name, file_name, "Params tag is not an Object");
+        logger.add_user_error("System error");
+        auto& output_file = OutputFileManager::get_instance();
+        output_file.fatal_error_report();
         exit(1);
     }
-    // assert(params_tag.HasMember("param") && "Не указаны параметры");
-    // *for user
     if (!params_tag.HasMember("param")) {
-        logger.log_err_msg(func_name, file_name, "Params tag does not contain parameter's definitions");
+        logger.log_err_msg(func_name, file_name, "Params tag does not contain parameters' definitions");
+        logger.add_user_error("Params tag does not contain parameters' definitions");
+        auto& output_file = OutputFileManager::get_instance();
+        output_file.fatal_error_report();
         exit(1);
     }
     traverse_param(params_tag["param"], graph);
@@ -468,9 +552,10 @@ void JSON_Traverser::traverse_algo(const Value& algo_tag, GraphInfo& graph) {
             logger.log_info_msg("Found tag block");
             traverse_block(itr->value, graph);
         } else {
-            // assert("Неопознанный тег внутри algo");
-            // *for user
             logger.log_err_msg(func_name, file_name, "Undefined tag inside algo tag");
+            logger.add_user_error("Undefined tag inside algo tag");
+            auto& output_file = OutputFileManager::get_instance();
+            output_file.fatal_error_report();
             exit(1);
         }
     }
@@ -490,6 +575,9 @@ void JSON_Traverser::traverse(const Document& doc, GraphInfo& graph) {
     // assert(head_tag.IsObject() && "Тег algo не является объектом");
     if (!head_tag.IsObject()) {
         logger.log_err_msg(func_name, file_name, "Algo tag is not an Object");
+        logger.add_user_error("System error");
+        auto& output_file = OutputFileManager::get_instance();
+        output_file.fatal_error_report();
         exit(1);
     }
     traverse_algo(head_tag, graph);

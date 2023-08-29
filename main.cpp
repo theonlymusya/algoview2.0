@@ -5,6 +5,7 @@
 #include "graph_info.hpp"
 #include "json_traverser.hpp"
 #include "logger.hpp"
+#include "output_file_manager.hpp"
 #include "xml_parser.hpp"
 
 void set_up_logger(char* input_file_name) {
@@ -22,6 +23,8 @@ int main(int argc, char* argv[]) {
     using namespace graph_manager;
     using namespace graph;
     using namespace logger;
+    using namespace output_file_manager;
+
     std::map<BlockId, Block*> block_map;
     XML_Parser parser;
     auto& logger = Logger::get_instance();
@@ -50,9 +53,9 @@ int main(int argc, char* argv[]) {
     for (const auto& block : block_map) {
         delete block.second;
     }
-    std::ofstream output_file("output.json");
-    output_file << "{" << vertices_manager.to_json() << edges_manager.to_json() << graph_charact_manager.to_json()
-                << "}" << std::endl;
+    auto& output_file = OutputFileManager::get_instance();
+    output_file.write("{" + graph_charact_manager.to_json() + vertices_manager.to_json() + edges_manager.to_json() +
+                      logger.warn_to_json() + logger.err_to_json() + "}");
     // graph_manager::print_json(vertices_manager, edges_manager);
 }
 

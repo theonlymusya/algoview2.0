@@ -1,5 +1,6 @@
 #pragma once
 #include <fstream>
+#include <vector>
 #include "string"
 
 namespace logger {
@@ -29,6 +30,14 @@ class Logger {
 
     void log_warn_msg(const std::string& func_name, const std::string& file_name, const std::string& msg);
 
+    void add_user_error(std::string error) { user_errors_.push_back(error); };
+
+    void add_user_warning(std::string warning) { user_warnings_.push_back(warning); };
+
+    std::string err_to_json();
+
+    std::string warn_to_json();
+
    private:
     Logger();
     ~Logger();
@@ -40,6 +49,8 @@ class Logger {
     const std::string func_out_log = "Exit function ";
     const std::string file_log = " In file ";
     const std::string func_log = "In func ";
+    std::vector<std::string> user_errors_;
+    std::vector<std::string> user_warnings_;
 };
 
 }  // namespace logger

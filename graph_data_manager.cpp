@@ -64,7 +64,7 @@ void GraphCharactManager::calculate_width() {
 std::string GraphCharactManager::to_json() {
     std::string result_string;
     calculate_width();
-    result_string += "\n\t\"characteristics\": [\n\t\t{ \"vertex_num\": ";
+    result_string += "\n\t\"characteristics\":\n\t\t{ \"vertex_num\": ";
     result_string += std::to_string(graph_charact_.vertex_num);
     result_string += ", \"edge_num\": ";
     result_string += std::to_string(graph_charact_.edge_num);
@@ -72,13 +72,13 @@ std::string GraphCharactManager::to_json() {
     result_string += std::to_string(graph_charact_.critical_length);
     result_string += ", \"width\": ";
     result_string += std::to_string(graph_charact_.width);
-    result_string += "}\n\t]\n";
+    result_string += "},\n";
     return result_string;
 }
 
 std::string VertexMapManager::to_json() {
     std::string result_string;
-    result_string += "\n\t\"vertices\": [";
+    result_string += "\t\"vertices\": [";
     for (const auto& vertex : vertices_) {
         std::string vertex_string = "\n\t\t{ \"id\": " + std::to_string(vertex.first) + ", \"coordinates\": [" +
                                     std::to_string(vertex.second->i) + ", " + std::to_string(vertex.second->j) + ", " +
