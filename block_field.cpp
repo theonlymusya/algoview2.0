@@ -3,6 +3,7 @@
 #include "expr.hpp"
 #include "json_traverser.hpp"
 #include "logger.hpp"
+#include "output_file_manager.hpp"
 
 const std::string file_name = "block_field.cpp";
 
@@ -12,6 +13,7 @@ using namespace graph_manager;
 using namespace algoview_json_traverser;
 using namespace reg_expr;
 using namespace logger;
+using namespace output_file_manager;
 using VarsMap = std::map<std::string, double>;
 int cur_block_shift = 0;
 
@@ -50,7 +52,10 @@ VertexId Block::get_vertex_id(CoordType i, CoordType j, CoordType k) {
 
     if (i + i_shift_ < 0 || j + j_shift_ < 0 || k + k_shift_ < 0 || i + i_shift_ >= coords_field_.size() ||
         j + j_shift_ >= coords_field_[0].size() || k + k_shift_ >= coords_field_[0][0].size()) {
-        logger.log_warn_msg(func_name, file_name, "Vertex with current coords will be ignored");
+        std::string msg = "Vertex with current coords = [" + std::to_string(i) + ", " + std::to_string(j) + ", " +
+                          std::to_string(k) + "] will be ignored, since it exceed defined range of arguments";
+        logger.log_warn_msg(func_name, file_name, msg);
+        logger.add_user_warning(msg);
         return ignore_vertex_id;
     }
 
@@ -82,8 +87,10 @@ VertexId Block::get_or_create_current_vertex(VertexMapManager& vertices_manager,
         // if current vertex already exists, previous one that is i/o vertex should be relocated
         // for this reason, we mark previuos vertex as extra
         msg = "Vertex with physical coords [" + std::to_string(i + i_shift_) + ", " + std::to_string(j + j_shift_) +
-              ", " + std::to_string(k + k_shift_) + "] have been created earlier";
+              ", " + std::to_string(k + k_shift_) +
+              "] have been created earlier. Create a new i/o vertex with a shift.";
         logger.log_warn_msg(func_name, file_name, msg);
+        logger.add_user_warning(msg);
     }
     vertex_id = create_vertex(vertices_manager, graph_character_manager, block_id, i, j, k, type);
 
@@ -144,9 +151,11 @@ VertexId Block::get_or_create_source_vertex(VertexMapManager& vertices_manager,
     if (vertex_id != -1) {
         return vertex_id;
     }
-    msg = "Src vertex with physical coords [" + std::to_string(i + i_shift_) + ", " + std::to_string(j + j_shift_) +
-          ", " + std::to_string(k + k_shift_) + "] will be created as i/o vertex";
+    msg = "Source vertex with physical coords [" + std::to_string(i + i_shift_) + ", " + std::to_string(j + j_shift_) +
+          ", " + std::to_string(k + k_shift_) +
+          "] will be created as i/o vertex, since vertex with current coords doesn’t exist";
     logger.log_warn_msg(func_name, file_name, msg);
+    logger.add_user_warning(msg);
     vertex_id = create_vertex(vertices_manager, graph_charact_manager, block_id, i, j, k, "0");
 
     logger.log_file_enter(func_name, file_name);
@@ -359,8 +368,13 @@ void Block::main_cycle(const BlockTagInfo& block_info,
                         logger.log_info_start_msg("iterating bsrc");
                         for (const auto& bsrc : vertex.bsrc) {
                             BlockId bsrc_block_id = bsrc.first;
-                            if (block_map.empty()) {
-                                logger.log_err_msg(func_name, file_name, "Source block is not defined yet");
+                            auto it = block_map.find(bsrc_block_id);
+                            if (it == block_map.end()) {
+                                msg = "Source block id = " + std::to_string(bsrc_block_id) + " is not defined yet";
+                                logger.log_err_msg(func_name, file_name, msg);
+                                logger.add_user_error(msg);
+                                auto& output_file = OutputFileManager::get_instance();
+                                output_file.fatal_error_report();
                                 exit(1);
                             }
                             auto bsrc_block_ptr = block_map[bsrc_block_id];

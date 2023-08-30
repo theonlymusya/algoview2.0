@@ -1,11 +1,10 @@
 {
 	"characteristics":
 		{ "vertex_num": 0, "edge_num": 0, "critical_length": 0, "width": 0},
-
 	"vertices": [],
 	"edges": [],
 	"warnings": [],
 	"errors": [
-		"Vertex tag has no attribute condition (even if condition is empty)"
+		"No such file or directory"
 	]
 }

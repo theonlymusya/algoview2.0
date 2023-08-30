@@ -1,12 +1,14 @@
 #include "block.hpp"
 #include "cassert"
 #include "iostream"
+#include "output_file_manager.hpp"
 
 const std::string file_name = "block.cpp";
 
 namespace graph_info {
 
 using namespace logger;
+using namespace output_file_manager;
 
 ArgTagsInfo& BlockTagInfo::get_args() {
     return args_;
@@ -53,9 +55,11 @@ void BlockTagsInfo::add_id(BlockId id) {
     logger.log_file_enter(func_name, file_name);
     logger.log_info_start_msg("adding block id to internal structure");
 
-    // assert(is_block_id_unique(id) && "ID блока используется повторно");
     if (!is_block_id_unique(id)) {
         logger.log_err_msg(func_name, file_name, "Block id is used twice");
+        logger.add_user_error("Block id is used twice");
+        auto& output_file = OutputFileManager::get_instance();
+        output_file.fatal_error_report();
         exit(1);
     }
     blocks_[n_].id = id;
@@ -70,10 +74,12 @@ void BlockTagsInfo::add_dim(int dim) {
     logger.log_file_enter(func_name, file_name);
     logger.log_info_start_msg("adding block dim to internal structure");
 
-    // assert((dim > 0 && dim < 4) && "Неверная размерность блока");
     if (!(dim > 0 && dim < 4)) {
-        std::string msg = "Invalid dimension of block " + blocks_[n_].id;
+        std::string msg = "Invalid dimension of block " + std::to_string(blocks_[n_].id);
         logger.log_err_msg(func_name, file_name, msg);
+        logger.add_user_error(msg);
+        auto& output_file = OutputFileManager::get_instance();
+        output_file.fatal_error_report();
         exit(1);
     }
     blocks_[n_].dim = dim;
