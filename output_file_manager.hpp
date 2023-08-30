@@ -10,12 +10,12 @@ class OutputFileManager {
         return instance;
     }
 
+    void open(const std::string& file_name) { output_file_.open(file_name); };
     void write(std::string string) { output_file_ << string; };
-
     void fatal_error_report();
 
    private:
-    OutputFileManager() { output_file_.open("output.json"); };
+    OutputFileManager(){};
     ~OutputFileManager() { output_file_.close(); };
     std::ofstream output_file_;
     std::string empty_graph_charact_str_ =

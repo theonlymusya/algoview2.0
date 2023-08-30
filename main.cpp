@@ -24,10 +24,25 @@ int main(int argc, char* argv[]) {
     using namespace graph;
     using namespace logger;
     using namespace output_file_manager;
+    auto& logger = Logger::get_instance();
+    auto& output_file = OutputFileManager::get_instance();
+
+    std::string output_file_name;
+    if (argc == 3)
+        output_file_name += argv[2];
+    else
+        output_file_name += "output.json";
+    output_file.open(output_file_name);
+
+    if (argc < 2) {
+        std::cerr << "Less of arguments: name of input file is needed";
+        logger.add_user_error("System error");
+        output_file.fatal_error_report();
+        exit(1);
+    }
 
     std::map<BlockId, Block*> block_map;
     XML_Parser parser;
-    auto& logger = Logger::get_instance();
     set_up_logger(argv[1]);
     logger.log_info_msg("--------------------------1ST STEP--------------------------");
     parser.parse(argv[1]);
@@ -53,7 +68,6 @@ int main(int argc, char* argv[]) {
     for (const auto& block : block_map) {
         delete block.second;
     }
-    auto& output_file = OutputFileManager::get_instance();
     output_file.write("{" + graph_charact_manager.to_json() + vertices_manager.to_json() + edges_manager.to_json() +
                       logger.warn_to_json() + logger.err_to_json() + "}");
     // graph_manager::print_json(vertices_manager, edges_manager);
