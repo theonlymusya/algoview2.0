@@ -53,7 +53,7 @@ VertexId Block::get_vertex_id(CoordType i, CoordType j, CoordType k) {
     if (i + i_shift_ < 0 || j + j_shift_ < 0 || k + k_shift_ < 0 || i + i_shift_ >= coords_field_.size() ||
         j + j_shift_ >= coords_field_[0].size() || k + k_shift_ >= coords_field_[0][0].size()) {
         std::string msg = "Vertex with current coords = [" + std::to_string(i) + ", " + std::to_string(j) + ", " +
-                          std::to_string(k) + "] will be ignored, since it exceed defined range of arguments";
+                          std::to_string(k) + "] will be ignored, since it is out of argument' range";
         logger.log_warn_msg(func_name, file_name, msg);
         logger.add_user_warning(msg);
         return ignore_vertex_id;
