@@ -68,9 +68,9 @@ std::string GraphCharactManager::to_json() {
     result_string += std::to_string(graph_charact_.vertex_num);
     result_string += ", \"edge_num\": ";
     result_string += std::to_string(graph_charact_.edge_num);
-    result_string += ", \"critical_length\": ";
+    result_string += ", \"critical_path_length\": ";
     result_string += std::to_string(graph_charact_.critical_length);
-    result_string += ", \"width\": ";
+    result_string += ", \"parallel_form_width\": ";
     result_string += std::to_string(graph_charact_.width);
     result_string += "},\n";
     return result_string;
