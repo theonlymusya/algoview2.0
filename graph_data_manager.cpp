@@ -45,6 +45,10 @@ int VertexMapManager::get_vertex_level(VertexId vertex_id) {
     return vertices_[vertex_id]->level;
 }
 
+std::string& VertexMapManager::get_vertex_type(VertexId vertex_id) {
+    return vertices_[vertex_id]->type;
+};
+
 void GraphCharactManager::inc_level_vertex_counter(int level) {
     if (graph_charact_.each_level_vertex_num.size() <= level) {
         graph_charact_.each_level_vertex_num.resize(level + 1);

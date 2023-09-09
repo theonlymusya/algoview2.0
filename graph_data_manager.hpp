@@ -37,6 +37,7 @@ class VertexMapManager {
     VertexId add_vertex(Vertex* vertex);
     void add_vertex_level(VertexId vertex_id, int level);
     int get_vertex_level(VertexId vertex_id);
+    std::string& get_vertex_type(VertexId vertex_id);
     void add_info(VertexId vertex_id, const std::string& info);
     std::string to_json();
     void clean_map();

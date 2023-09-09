@@ -176,7 +176,7 @@ void Block::create_edge(VertexId src_id,
 
     // Edge* new_edge_ptr = new Edge{src_id, target_id};
     Edge* new_edge_ptr;
-    if (vertices_manager.get_vertex_level(src_id)) {
+    if (vertices_manager.get_vertex_type(src_id) != "0") {
         new_edge_ptr = new Edge{src_id, target_id, "1"};
         graph_character_manager.inc_edges_counter();
     } else {
@@ -405,6 +405,8 @@ void Block::main_cycle(const BlockTagInfo& block_info,
                             //     logger.log_info_finish_msg("changing target vertex levels");
                             // }
                             vertices_manager.add_vertex_level(vertex_id, level);
+                            // if (level)
+                            //     graph_charact_manager.inc_vertices_counter();
                             // if vertex has level = 0 these vertices are ignored, since level = 0 is not
                             // considered to be a part of the graph (extra part)
                             graph_charact_manager.inc_level_vertex_counter(level);
