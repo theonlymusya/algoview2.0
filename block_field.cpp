@@ -91,6 +91,7 @@ VertexId Block::get_or_create_current_vertex(VertexMapManager& vertices_manager,
               "] have been created earlier. Create a new i/o vertex with a shift.";
         logger.log_warn_msg(func_name, file_name, msg);
         logger.add_user_warning(msg);
+        vertices_manager.add_info(vertex_id, "extra");
     }
     vertex_id = create_vertex(vertices_manager, graph_character_manager, block_id, i, j, k, type);
 
