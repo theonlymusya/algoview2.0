@@ -27,8 +27,11 @@ void parse_value(const std::string& str, std::string& left_value, std::string& r
 
     int first_parse_sym_pos = str.find(parse_sym);
     if (first_parse_sym_pos == std::string::npos) {
-        logger.log_err_msg(func_name, file_name, "Incorrect string or symbol");
-        logger.add_user_error("Incorrect string or symbol in expression: " + str);
+        msg = "Expression " + str + " should contain a parse symbol (";
+        msg.push_back(parse_sym);
+        msg += ")";
+        logger.log_err_msg(func_name, file_name, msg);
+        logger.add_user_error(msg);
         auto& output_file = OutputFileManager::get_instance();
         output_file.fatal_error_report();
         exit(1);
@@ -53,8 +56,18 @@ void parse_value(const std::string& str, std::string& left_value, std::string& r
     left_value = std::string(c_left_value);
     if (parse_sym == ',')
         first_parse_sym_pos++;
-    else if (parse_sym == '.')
+    else if (parse_sym == '.') {
         first_parse_sym_pos += 2;
+        // int extra_parse_sym_pos = str.find(first_parse_sym_pos, parse_sym);
+        // if (extra_parse_sym_pos == std::string::npos) {
+        //     msg = "Expression " + str + " should contain a parse symbol (..)";
+        //     logger.log_err_msg(func_name, file_name, msg);
+        //     logger.add_user_error(msg);
+        //     auto& output_file = OutputFileManager::get_instance();
+        //     output_file.fatal_error_report();
+        //     exit(1);
+        // }
+    }
     int right_value_len = str.length() - first_parse_sym_pos;
     char* c_right_value = (char*)malloc(right_value_len);
     if (c_right_value == NULL) {
