@@ -408,7 +408,7 @@ void Block::main_cycle(const BlockTagInfo& block_info,
                             // if vertex has level = 0 these vertices are ignored, since level = 0 is not
                             // considered to be a part of the graph (extra part)
                             graph_charact_manager.inc_level_vertex_counter(level);
-                            graph_charact_manager.add_critical_lenght(level);
+                            graph_charact_manager.add_critical_lenght(level - 1);
                             logger.log_info_finish_msg("determining current vertex level");
                         }
                     }
