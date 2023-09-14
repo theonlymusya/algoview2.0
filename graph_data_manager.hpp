@@ -11,9 +11,9 @@ using CoordType = int;
 struct Vertex {
     int block_id;
     int i, j, k;
+    int level = 0;
     std::string type = "0";
     std::string info = "normal";
-    int level = 0;
 };
 
 struct Edge {

@@ -115,12 +115,19 @@ VertexId Block::create_vertex(VertexMapManager& vertices_manager,
     logger.log_info_msg("j = " + std::to_string(j) + " j_shift = " + std::to_string(j_shift_));
     logger.log_info_msg("k = " + std::to_string(j) + " k_shift = " + std::to_string(k_shift_));
 
-    Vertex* new_vertex_ptr =
-        new Vertex{block_id, i + i_shift_, j + j_shift_, k + k_shift_ + (cur_block_shift - local_block_shift_), type};
-    if (type != "0")
+    // Vertex* new_vertex_ptr =
+    //     new Vertex{block_id, i + i_shift_, j + j_shift_, k + k_shift_ + (cur_block_shift - local_block_shift_),
+    //     type};
+    Vertex* new_vertex_ptr;
+    if (type != "0") {
         graph_charact_manager.inc_vertices_counter();
-    else
+        new_vertex_ptr = new Vertex{
+            block_id, i + i_shift_, j + j_shift_, k + k_shift_ + (cur_block_shift - local_block_shift_), 1, type};
+    } else {
         i_o_vertex_flag = 1;
+        new_vertex_ptr = new Vertex{
+            block_id, i + i_shift_, j + j_shift_, k + k_shift_ + (cur_block_shift - local_block_shift_), 0, type};
+    }
     VertexId new_vertex_id = vertices_manager.add_vertex(new_vertex_ptr);
     logger.log_info_msg("New vertex = " + std::to_string(new_vertex_id));
 
