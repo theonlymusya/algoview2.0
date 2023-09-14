@@ -16,7 +16,7 @@ using namespace logger;
 using namespace output_file_manager;
 using VarsMap = std::map<std::string, double>;
 int cur_block_shift = 0;
-int i_o_vertex_flag = 0;
+// int i_o_vertex_flag = 0;
 
 Block::Block(const BlockTagInfo& _block_info, int _block_number) {
     const auto& args = _block_info.get_args();
@@ -124,7 +124,7 @@ VertexId Block::create_vertex(VertexMapManager& vertices_manager,
         new_vertex_ptr = new Vertex{
             block_id, i + i_shift_, j + j_shift_, k + k_shift_ + (cur_block_shift - local_block_shift_), 1, type};
     } else {
-        i_o_vertex_flag = 1;
+        // i_o_vertex_flag = 1;
         new_vertex_ptr = new Vertex{
             block_id, i + i_shift_, j + j_shift_, k + k_shift_ + (cur_block_shift - local_block_shift_), 0, type};
     }
@@ -420,10 +420,11 @@ void Block::main_cycle(const BlockTagInfo& block_info,
                             // if vertex has level = 0 these vertices are ignored, since level = 0 is not
                             // considered to be a part of the graph (extra part)
                             graph_charact_manager.inc_level_vertex_counter(level);
-                            if (i_o_vertex_flag)
-                                graph_charact_manager.add_critical_lenght(level - 1);
-                            else
-                                graph_charact_manager.add_critical_lenght(level);
+                            // if (i_o_vertex_flag)
+                            //     graph_charact_manager.add_critical_lenght(level - 1);
+                            // else
+                            //     graph_charact_manager.add_critical_lenght(level);
+                            graph_charact_manager.add_critical_lenght(level - 1);
                             logger.log_info_finish_msg("determining current vertex level");
                         }
                     }
