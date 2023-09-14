@@ -308,6 +308,7 @@ void change_levels_rec(const EdgeMapManager& edges_manager,
     edges_manager.get_target_vertex_ids(target_vertex_ids, vertex_id);
     if (target_vertex_ids.empty())
         return;
+
     std::string str;
     array_to_str(target_vertex_ids, str);
     logger.log_info_msg("Here are vertex ids which level must be changed : " + str);
