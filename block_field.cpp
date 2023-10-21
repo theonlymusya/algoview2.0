@@ -427,6 +427,8 @@ void Block::main_cycle(const BlockTagInfo& block_info,
                             //     graph_charact_manager.add_critical_lenght(level);
                             graph_charact_manager.add_critical_lenght(level - 1);
                             logger.log_info_finish_msg("determining current vertex level");
+                        } else if (vertices_manager.get_vertex_level(vertex_id) == 1) {
+                            graph_charact_manager.inc_level_vertex_counter(1);
                         }
                     }
                 }
